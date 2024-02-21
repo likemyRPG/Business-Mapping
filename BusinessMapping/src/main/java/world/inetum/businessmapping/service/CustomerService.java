@@ -31,9 +31,16 @@ public class CustomerService {
     }
 
     public Mono<CustomerEntity> create(CustomerDto customerDto) {
-        CustomerEntity customer = new CustomerEntity(customerDto.getName(), customerDto.getSize(), customerDto.getLocation());
+        CustomerEntity customer = new CustomerEntity();
+        customer.setName(customerDto.getName());
+        customer.setSize(customerDto.getSize());
+        customer.setLocation(customerDto.getLocation());
+        customer.setNumberOfEmployees(customerDto.getNumberOfEmployees());
+        customer.setIndustry(customerDto.getIndustry());
+        customer.setRevenue(customerDto.getRevenue());
         return customerRepository.save(customer);
     }
+
 
     public Mono<Void> delete(String id) {
         return customerRepository.deleteById(id);
