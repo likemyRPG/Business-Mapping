@@ -1,0 +1,12 @@
+<div *ngIf="customers.length; else noCustomers">
+  <ul>
+    <li *ngFor="let customer of customers">
+      {{ customer.name }}
+      <!-- Add more customer details as needed -->
+    </li>
+  </ul>
+</div>
+
+<ng-template #noCustomers>
+  <p>No customers to display.</p>
+</ng-template>
