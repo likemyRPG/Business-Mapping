@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {NgForOf} from "@angular/common";
-import {NavItem} from "../models/NavItem";
-import {NavService} from "../services/nav.service";
 import {RouterLink, RouterLinkActive} from "@angular/router";
-import {SafeHtmlPipe} from "../safe-html.pipe";
+import {SafeHtmlPipe} from "../../../../safe-html.pipe";
+import {NavItem} from "../../models/NavItem";
+import {NavService} from "../../services/nav.service";
 
 @Component({
   selector: 'app-sidebar',

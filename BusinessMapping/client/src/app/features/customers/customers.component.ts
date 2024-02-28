@@ -1,9 +1,9 @@
 // customers.component.ts
 import {Component} from '@angular/core';
 import {CommonModule, NgForOf, NgIf} from '@angular/common';
-import {CustomerService} from '../services/customer.service'; // Import your service
-import {Customer} from '../models/Customer';
-import {LoadingComponent} from "../loading/loading.component"; // Import your model
+import {LoadingComponent} from "../shared/components/loading/loading.component";
+import {Customer} from "../shared/models/Customer";
+import {CustomerService} from "../shared/services/customer.service";
 
 @Component({
   selector: 'app-customers',
