@@ -1,6 +1,6 @@
-import { Routes } from '@angular/router';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { CustomersComponent } from './customers/customers.component';
+import {Routes} from '@angular/router';
+import {DashboardComponent} from './dashboard/dashboard.component';
+import {CustomersComponent} from './customers/customers.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },

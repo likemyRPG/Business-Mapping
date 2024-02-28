@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { LoadingComponent } from './loading.component';
+import {LoadingComponent} from './loading.component';
 
 describe('LoadingComponent', () => {
   let component: LoadingComponent;
@@ -11,7 +11,7 @@ describe('LoadingComponent', () => {
       imports: [LoadingComponent]
     })
     .compileComponents();
-    
+
     fixture = TestBed.createComponent(LoadingComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

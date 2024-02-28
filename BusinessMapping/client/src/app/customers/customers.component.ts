@@ -1,8 +1,8 @@
 // customers.component.ts
-import { Component, OnInit } from '@angular/core';
-import { NgIf, NgForOf, CommonModule } from '@angular/common';
-import { CustomerService } from '../services/customer.service'; // Import your service
-import { Customer } from '../models/Customer';
+import {Component} from '@angular/core';
+import {CommonModule, NgForOf, NgIf} from '@angular/common';
+import {CustomerService} from '../services/customer.service'; // Import your service
+import {Customer} from '../models/Customer';
 import {LoadingComponent} from "../loading/loading.component"; // Import your model
 
 @Component({
