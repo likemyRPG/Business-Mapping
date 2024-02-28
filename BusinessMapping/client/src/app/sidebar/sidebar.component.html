@@ -2,10 +2,10 @@
 <div class="flex h-screen w-16 flex-col justify-between bg-white">
   <div>
     <!-- Logo Section -->
-    <div class="logo-section py-4 flex flex-col items-center justify-start border-b border-gray-100">
+    <div class="logo-section py-4 flex flex-col items-center justify-start">
       <!-- Logo Section with adjusted padding and margin -->
       <div class="logo-container my-2 px-2">
-        <span class="grid h-10 w-10 place-content-center rounded-lg bg-gray-100 text-xs text-gray-600">L</span>
+        <span class="logo grid h-10 w-10 place-content-center rounded-full bg-blue-500 text-white text-lg font-bold">L</span>
       </div>
     </div>
 
@@ -13,9 +13,9 @@
     <div class="border-t border-gray-100">
       <div class="px-2">
         <div class="py-4" *ngFor="let item of navItems">
-          <a href="{{ item.route }}" class="flex group relative justify-center rounded bg-blue-50 px-2 py-1.5 text-blue-700 hover:bg-blue-700 hover:text-white">
+          <a href="{{ item.route }}" class="nav-link group flex justify-center rounded-md p-2 hover:bg-blue-500 hover:text-white">
             <img src="{{ item.iconPath }}" alt="{{ item.label }}" class="h-5 w-5 opacity-75">
-            <span class="invisible absolute -right-36 top-1/2 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible">{{ item.label }}</span>
+            <span class="tooltip invisible absolute -right-36 top-1/2 -translate-y-1/2 rounded bg-blue-500 px-2 py-1.5 text-xs font-medium text-white group-hover:visible">{{ item.label }}</span>
           </a>
         </div>
       </div>

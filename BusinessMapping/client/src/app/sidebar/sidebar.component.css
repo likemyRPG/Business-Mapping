@@ -1,0 +1,33 @@
+/* sidebar.component.css */
+.sidebar {
+  /* Add a subtle shadow for depth */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+  position: relative; /* Add this line */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tooltip {
+  position: absolute; /* Ensure your tooltip is positioned absolutely */
+  transform: translateX(0%) translateY(-50%); /* Adjust based on the exact position you want */
+  visibility: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  left: 100%; /* Position to the right of the nav-link */
+  top: 50%; /* Center vertically */
+  margin-left: 10px; /* Add some space between the nav-link and the tooltip */
+  background-color: #000; /* Or any color you prefer */
+  color: #fff; /* Text color */
+  padding: 5px; /* Adjust padding */
+  border-radius: 6px; /* Rounded corners for the tooltip */
+  z-index: 10; /* Ensure it's above other content */
+}
+
+.nav-link:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
