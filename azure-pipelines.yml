@@ -5,8 +5,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  javaVersion: '11'
-  nodeVersion: '14.x'
+  javaVersion: '21'
+  nodeVersion: '21.x'
   workingDirectory: '$(Build.SourcesDirectory)'
 
 stages:
