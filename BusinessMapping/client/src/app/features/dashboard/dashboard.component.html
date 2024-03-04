@@ -1,1 +1,9 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <p>Dashboard</p>
+  <ul>
+    <li *ngFor="let customer of customers">
+      {{customer.name}}
+    </li>
+  </ul>
+  <app-revenue-overview [customers]="customers"></app-revenue-overview>
+</div>

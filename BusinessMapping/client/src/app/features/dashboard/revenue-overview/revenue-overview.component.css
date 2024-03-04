@@ -1,0 +1,8 @@
+.chart-container {
+  /* Example styling */
+  width: 100%;
+  max-width: 600px; /* or any specific size */
+  height: 400px;
+  margin: auto;
+  display: block;
+}
