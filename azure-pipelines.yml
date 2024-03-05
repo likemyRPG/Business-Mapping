@@ -39,7 +39,7 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    cd client
+    cd BusinessMapping/client
     npm install
     npm run build -- --prod
   displayName: 'Build Angular Application'
