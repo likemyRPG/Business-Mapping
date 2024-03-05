@@ -41,6 +41,6 @@ steps:
 - script: |
     cd BusinessMapping/client
     npm install
-    npm run build -- --prod
+    npm run build -- --configuration production
   displayName: 'Build Angular Application'
 
