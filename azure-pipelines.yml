@@ -24,10 +24,6 @@ steps:
   displayName: 'Start Neo4j Docker Container'
 
 - script: |
-    echo "Run your tests or other pipeline tasks that need Neo4j here."
-  displayName: 'Run Tests'
-
-- script: |
     docker stop neo4j
     docker rm neo4j
   displayName: 'Stop and Remove Neo4j Docker Container'
