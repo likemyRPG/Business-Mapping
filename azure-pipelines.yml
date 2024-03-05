@@ -31,3 +31,16 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
+
+- task: NodeTool@0
+  inputs:
+    versionSource: 'spec'
+    versionSpec: '21.5.0'
+  displayName: 'Install Node.js'
+
+- script: |
+    cd client
+    npm install
+    npm run build -- --prod
+  displayName: 'Build Angular Application'
+
