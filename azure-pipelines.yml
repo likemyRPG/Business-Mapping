@@ -74,7 +74,7 @@ stages:
 
     - script: |
         sudo rm -rf /usr/share/nginx/html/*
-        sudo cp -r /home/vsts/work/1/s/BusinessMapping/client/dist/client/* /usr/share/nginx/html/
+        sudo cp -r /home/vsts/work/1/s/BusinessMapping/client/dist/client /usr/share/nginx/html/
       displayName: 'Copy Angular App to Nginx'
 
     - script: |
