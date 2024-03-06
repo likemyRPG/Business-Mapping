@@ -73,6 +73,13 @@ stages:
       displayName: 'Install Nginx'
 
     - script: |
+        ls -lah /home/vsts/work/1/s/BusinessMapping/
+        ls -lah /home/vsts/work/1/s/BusinessMapping/client/dist/
+        ls -lah /home/vsts/work/1/s/BusinessMapping/client/dist/client/
+      displayName: 'List Build Artifacts'
+
+
+    - script: |
         sudo rm -rf /usr/share/nginx/html/*
         sudo cp -r /home/vsts/work/1/s/BusinessMapping/client/dist/client /usr/share/nginx/html/
       displayName: 'Copy Angular App to Nginx'
