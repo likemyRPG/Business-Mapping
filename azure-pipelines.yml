@@ -10,9 +10,6 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- bash: 'wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz '
-  displayName: 'Bash Script'
-
 - task: DockerInstaller@0
   displayName: "Install Docker"
   inputs:
