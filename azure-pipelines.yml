@@ -27,14 +27,6 @@ steps:
     docker stop neo4j
     docker rm neo4j
   displayName: 'Stop and Remove Neo4j Docker Container'
-- task: JavaToolInstaller@0
-  displayName: 'Use Java 21'
-  inputs:
-    versionSpec: 21
-    jdkArchitectureOption: x64
-    jdkSourceOption: LocalDirectory
-    jdkFile: '$(build.sourcesdirectory)/jdk-21_linux-x64_bin.tar.gz'
-    jdkDestinationDirectory: '$(agent.toolsDirectory)/jdk21'
 - task: Maven@3
   inputs:
     mavenPomFile: 'BusinessMapping/pom.xml'
