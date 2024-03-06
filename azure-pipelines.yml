@@ -74,6 +74,7 @@ stages:
 
     - script: |
         ls -lah /home/vsts/work/1/s/BusinessMapping/
+        ls -lah /home/vsts/work/1/s/BusinessMapping/client
         ls -lah /home/vsts/work/1/s/BusinessMapping/client/dist/
         ls -lah /home/vsts/work/1/s/BusinessMapping/client/dist/client/
       displayName: 'List Build Artifacts'
