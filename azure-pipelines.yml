@@ -15,7 +15,7 @@ stages:
         mavenPomFile: 'BusinessMapping/pom.xml'
         mavenOptions: '-Xmx3072m'
         javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11' # Adjusted to a valid JDK version
+        jdkVersionOption: '1.21'
         jdkArchitectureOption: 'x64'
         goals: 'package'
         publishJUnitResults: true
