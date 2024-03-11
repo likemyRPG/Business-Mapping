@@ -4,7 +4,7 @@ import {SectorDistributionComponent} from "./sector-distribution/sector-distribu
 import {ProjectSuccessRateComponent} from "./project-success-rate/project-success-rate.component";
 import {CustomerService} from "../shared/services/customer.service";
 import {Customer} from "../shared/models/Customer";
-import {NgForOf} from "@angular/common";
+import {NgClass, NgForOf, NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-dashboard',
@@ -13,13 +13,20 @@ import {NgForOf} from "@angular/common";
     RevenueOverviewComponent,
     SectorDistributionComponent,
     ProjectSuccessRateComponent,
-    NgForOf
+    NgForOf,
+    NgClass,
+    NgIf
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
   customers: Customer[] = [];
+  cards = [
+    { title: 'Revenue Overview', isLarge: true },
+    { title: 'Another Chart', isLarge: true },
+    { title: 'More Data', isLarge: false },
+  ];
 
   constructor(private customerService: CustomerService) {}
 

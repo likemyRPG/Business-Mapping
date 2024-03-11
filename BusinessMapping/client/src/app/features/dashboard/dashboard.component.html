@@ -1,9 +1,25 @@
-<div class="dashboard-container">
-  <p>Dashboard</p>
-  <ul>
-    <li *ngFor="let customer of customers">
-      {{customer.name}}
-    </li>
-  </ul>
-  <app-revenue-overview [customers]="customers"></app-revenue-overview>
+<!-- Dashboard Container -->
+<div class="bg-gray-100 p-5 min-h-screen">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-3xl font-bold text-gray-900 mb-5">Dashboard</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Dynamic Card Generation -->
+      <div *ngFor="let card of cards"
+           [ngClass]="{'lg:col-span-2': card.isLarge, 'lg:col-span-1': !card.isLarge}"
+           class="bg-white shadow-lg rounded-lg p-5">
+        <div class="mb-2 font-bold text-xl">{{ card.title }}</div>
+        <!-- Placeholder for dynamic component loading -->
+        <!-- Example of using *ngIf to load different components based on the card title -->
+        <ng-container *ngIf="card.title === 'Revenue Overview'">
+          <app-revenue-overview [customers]="customers"></app-revenue-overview>
+        </ng-container>
+        <ng-container *ngIf="card.title === 'Another Chart'">
+          <!-- Placeholder for another chart component -->
+        </ng-container>
+        <ng-container *ngIf="card.title === 'More Data'">
+          <!-- Placeholder for more data component -->
+        </ng-container>
+      </div>
+    </div>
+  </div>
 </div>
