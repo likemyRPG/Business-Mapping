@@ -5,8 +5,7 @@ import {
   Input,
   AfterViewInit,
   SimpleChanges,
-  OnChanges,
-  HostListener
+  OnChanges
 } from '@angular/core';
 import * as d3 from 'd3';
 import {Customer} from "../../shared/models/Customer";
@@ -125,7 +124,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
         .style("top", (event.pageY - 28) + "px");
     })
 
-      .on("mouseout", function(d) {
+      .on("mouseout", function() {
         tooltip.transition()
           .duration(500)
           .style("opacity", 0);

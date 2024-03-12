@@ -1,11 +1,2 @@
-<app-loading *ngIf="loading"></app-loading>
-
-<div *ngIf="customers.length; else noCustomers">
-  <div class="container" style="margin-top: 50px;">
-    <div #chart></div>
-  </div>
-</div>
-
-<ng-template #noCustomers>
-  <p>No customers to display.</p>
-</ng-template>
+<h3>Customer Visualization Component</h3>
+<app-customer-visualization-component [customers]="customers" ></app-customer-visualization-component>

@@ -1,0 +1,45 @@
+/* customer-visualization-component.component.css */
+.active {
+  stroke: #000;
+  stroke-width: 2px;
+}
+
+.container {
+  position: relative;
+  height: 100vh; /* Adjust the height as needed */
+}
+.sidebar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 20%; /* Adjust the width as needed */
+  max-width: 300px; /* Maximum width */
+  height: 100%;
+  background-color: #1F2937;
+  color: white;
+  z-index: 10;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+.sidebar.active {
+  transform: translateX(0);
+}
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #F9FAFB;
+}
+/* On hover effect for nodes */
+.node-info {
+  position: absolute;
+  background-color: #ffffff;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #dddddd;
+  display: none;
+  z-index: 20;
+  /* Adjustments for better placement */
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+}
