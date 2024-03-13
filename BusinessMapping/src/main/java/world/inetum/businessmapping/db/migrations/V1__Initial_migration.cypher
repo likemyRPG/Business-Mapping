@@ -1,1 +1,0 @@
-CREATE CONSTRAINT ON (c:Customer) ASSERT c.email IS UNIQUE;
