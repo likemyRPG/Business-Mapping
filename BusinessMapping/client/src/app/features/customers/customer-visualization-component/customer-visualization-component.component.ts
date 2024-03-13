@@ -9,8 +9,11 @@ import {
   ViewChild
 } from '@angular/core';
 import {Customer} from "../../shared/models/Customer";
+import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
+import {Sector} from "../../shared/models/Sector";
 import * as d3 from 'd3';
 import {NgIf} from "@angular/common";
+import {SimulationNodeDatum} from "d3";
 
 @Component({
   selector: 'app-customer-visualization-component',
@@ -24,6 +27,8 @@ import {NgIf} from "@angular/common";
 export class CustomerVisualizationComponent implements OnChanges, AfterViewInit {
   @ViewChild('chart') chartContainer: ElementRef | undefined;
   @Input() customers: Customer[] | undefined;
+  @Input() relationships: CustomerSectorRelation[] | undefined;
+  @Input() sectors: Sector[] | undefined;
   selectedCustomer: Customer | null = null;
   sidebarHidden: boolean = false;
   sidebarExpanded: boolean = false;
@@ -77,7 +82,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   createChart(): void {
-    if (!this.customers || !this.chartContainer) return;
+    if (!this.customers || !this.sectors || !this.chartContainer || !this.relationships) return;
 
     const element = this.chartContainer.nativeElement;
     const width = element.offsetWidth;
@@ -110,14 +115,37 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .style('border-radius', '5px')
       .style('padding', '10px');
 
+    const combinedNodes = [...this.customers.map(customer => ({
+      ...customer,
+      type: 'customer'
+    })), ...this.sectors.map(sector => ({
+      ...sector,
+      type: 'sector'
+    }))];
+
+    // Create a simulation for positioning, if necessary
+    const simulation = d3.forceSimulation(combinedNodes as SimulationNodeDatum[])
+      .force("link", d3.forceLink(this.relationships as any).id(d => (d as any).id))
+      .force("charge", d3.forceManyBody())
+      .force("center", d3.forceCenter(width / 2, height / 2));
+
+    // Draw links
+    const link = svg.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(this.relationships)
+      .enter().append("line")
+      .attr("stroke-width", 2)
+      .style("stroke", "#999");
+
     const nodes = svg.selectAll(".node")
-      .data(this.customers)
+      .data(combinedNodes)
       .enter().append("circle")
       .attr("class", "node")
-      .attr("r", d => radiusScale(+d.revenue))
+      .attr("r", d => d.type === 'customer' ? radiusScale(+d.revenue) : 10)
       .attr("cx", (d, i) => (i + 1) * (width / (this.customers!.length + 1)))
       .attr("cy", height / 2)
-      .attr("fill", d => color(+d.revenue))
+      .attr("fill", d => d.type === 'customer' ? color(+d.revenue) : 'lightgray')
       .on("mouseover", function(event, d) {
         tooltip.transition()
           .duration(200)
@@ -137,6 +165,19 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         console.log(d);
       });
 
+    simulation.on("tick", () => {
+      // Update positions of links and nodes based on simulation
+      link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+      nodes
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+      // Update labels positions if you have them
+    });
+
     const drag = d3.drag<SVGCircleElement, any>()
       .on("start", (event, d) => this.dragStarted(event, d))
       .on("drag", (event, d) => this.dragged(event, d))
@@ -147,7 +188,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     // Add labels to each node
     svg.selectAll(".label")
-      .data(this.customers)
+      .data(combinedNodes)
       .enter().append("text")
       .attr("x", (d, i) => (i + 1) * (width / (this.customers!.length + 1)))
       .attr("y", height / 2 + 30)
