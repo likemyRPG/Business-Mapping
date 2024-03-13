@@ -1,20 +1,20 @@
-package world.inetum.businessmapping.entity;
+    package world.inetum.businessmapping.entity;
 
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
-import org.springframework.data.neo4j.core.schema.Id;
-import org.springframework.data.neo4j.core.schema.Node;
-import org.springframework.data.neo4j.core.schema.Property;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+    import org.springframework.data.neo4j.core.schema.GeneratedValue;
+    import org.springframework.data.neo4j.core.schema.Id;
+    import org.springframework.data.neo4j.core.schema.Node;
+    import org.springframework.data.neo4j.core.schema.Property;
 
-@Node("Sector")
-public class SectorEntity {
-    @Id
-    @GeneratedValue
-    private Long id;
+    @Data
+    @Node("Sector")
+    @NoArgsConstructor
+    public class SectorEntity {
+        @Id
+        @GeneratedValue
+        private Long id;
 
-    @Property("name")
-    private final String name;
-
-    public SectorEntity(String name) {
-        this.name = name;
+        @Property("name")
+        private String name;
     }
-}

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import world.inetum.businessmapping.dto.CustomerSectorDTO;
 import world.inetum.businessmapping.entity.CustomerEntity;
 import world.inetum.businessmapping.repository.CustomerRepository;
 
@@ -31,5 +32,9 @@ public class CustomerService {
 
     public Flux<CustomerEntity> findBySector(String sector) {
         return customerRepository.findAllBySector(sector);
+    }
+
+    public Flux<CustomerSectorDTO> findAllCustomerSectorRelations() {
+        return customerRepository.findAllCustomerSectorRelations();
     }
 }
