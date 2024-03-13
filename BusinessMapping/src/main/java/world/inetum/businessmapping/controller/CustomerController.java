@@ -6,7 +6,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import world.inetum.businessmapping.dto.CustomerDto;
 import world.inetum.businessmapping.entity.CustomerEntity;
 import world.inetum.businessmapping.service.CustomerService;
 
@@ -37,18 +36,6 @@ public class CustomerController {
     @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     Mono<CustomerEntity> getCustomerById(@PathVariable String id) {
         return customerService.findById(id);
-    }
-
-    @Operation(summary = "Create a new customer", description = "Create a new customer", tags = {"customers"})
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    Mono<CustomerEntity> createCustomer(@RequestBody CustomerDto customer) {
-        return customerService.create(customer);
-    }
-
-    @Operation(summary = "Delete a customer", description = "Delete a customer by id", tags = {"customers"})
-    @DeleteMapping(value = "/{id}")
-    Mono<Void> deleteCustomer(@PathVariable String id) {
-        return customerService.delete(id);
     }
 
     @Operation(summary = "Get customers by sector", description = "Retrieve a list of customers by sector", tags = {"customers"})
