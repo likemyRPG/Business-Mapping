@@ -8,5 +8,6 @@ import lombok.Setter;
 public class CustomerSectorDTO {
     private String customerId;
     private String customerName;
+    private String sectorId;
     private String sectorName;
 }

@@ -14,6 +14,7 @@ public interface CustomerRepository extends ReactiveNeo4jRepository<CustomerEnti
     Flux<CustomerEntity> findAllBySector(String sector);
 
     @Query("MATCH (c:Customer)-[:OPERATES_IN]->(s:Sector) " +
-            "RETURN c.uuid AS customerId, c.name AS customerName, s.name AS sectorName")
+            "RETURN c.uuid AS customerId, c.name AS customerName, s.uuid AS sectorId, s.name AS sectorName")
     Flux<CustomerSectorDTO> findAllCustomerSectorRelations();
+
 }

@@ -30,8 +30,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   @Input() relationships: CustomerSectorRelation[] | undefined;
   @Input() sectors: Sector[] | undefined;
   selectedCustomer: Customer | null = null;
-  sidebarHidden: boolean = false;
-  sidebarExpanded: boolean = false;
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -82,6 +80,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   createChart(): void {
+    console.log(this.customers);
+    console.log(this.relationships);
+    console.log(this.sectors);
     if (!this.customers || !this.sectors || !this.chartContainer || !this.relationships) return;
 
     const element = this.chartContainer.nativeElement;
@@ -115,13 +116,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .style('border-radius', '5px')
       .style('padding', '10px');
 
-    const combinedNodes = [...this.customers.map(customer => ({
-      ...customer,
-      type: 'customer'
-    })), ...this.sectors.map(sector => ({
-      ...sector,
-      type: 'sector'
-    }))];
+    const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
+      ...this.customers.map(customer => ({ ...customer, type: 'customer' })),
+      ...this.sectors.map(sector => ({ ...sector, type: 'sector' }))
+    ];
 
     // Create a simulation for positioning, if necessary
     const simulation = d3.forceSimulation(combinedNodes as SimulationNodeDatum[])
@@ -142,15 +140,15 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .data(combinedNodes)
       .enter().append("circle")
       .attr("class", "node")
-      .attr("r", d => d.type === 'customer' ? radiusScale(+d.revenue) : 10)
+      .attr("r", d => 'revenue' in d ? radiusScale(d.revenue) : 10)
       .attr("cx", (d, i) => (i + 1) * (width / (this.customers!.length + 1)))
       .attr("cy", height / 2)
-      .attr("fill", d => d.type === 'customer' ? color(+d.revenue) : 'lightgray')
+      .attr("fill", d => 'revenue' in d ? color(d.revenue) : 'lightgray')
       .on("mouseover", function(event, d) {
         tooltip.transition()
           .duration(200)
           .style("opacity", .9);
-        tooltip.html(`Name: ${d.name}<br/>Revenue: $${d.revenue}`)
+        tooltip.html(`Name: ${d.name}<br/>${'revenue' in d ? `Revenue: $${d.revenue}` : ''}`)
           .style("left", (event.pageX) + "px")
           .style("top", (event.pageY - 28) + "px");
       })
@@ -160,23 +158,25 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
           .style("opacity", 0);
       })
       .on("click", (event, d) => {
-        this.selectedCustomer = d; // Set the clicked node's data as the selectedCustomer
+        this.selectedCustomer = d as Customer;
         this.updateSidebar(); // A method to handle sidebar
         console.log(d);
       });
 
     simulation.on("tick", () => {
-      // Update positions of links and nodes based on simulation
       link
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
+        .attr("x1", (d: any) => (d.source as SimulationNodeDatum).x ?? 0)
+        .attr("y1", (d: any) => (d.source as SimulationNodeDatum).y ?? 0)
+        .attr("x2", (d: any) => (d.target as SimulationNodeDatum).x ?? 0)
+        .attr("y2", (d: any) => (d.target as SimulationNodeDatum).y ?? 0);
+
       nodes
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y);
-      // Update labels positions if you have them
+        // @ts-ignore
+        .attr("cx", (d: SimulationNodeDatum) => d.x ?? 0)
+        // @ts-ignore
+        .attr("cy", (d: SimulationNodeDatum) => d.y ?? 0);
     });
+
 
     const drag = d3.drag<SVGCircleElement, any>()
       .on("start", (event, d) => this.dragStarted(event, d))
@@ -199,11 +199,5 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
   private updateSidebar() {
     this.changeDetectorRef.detectChanges();
-  }
-
-  toggleSidebar(): void {
-    this.sidebarHidden = !this.sidebarHidden;
-    this.sidebarExpanded = !this.sidebarExpanded;
-    this.updateChart(); // You may need to adjust the chart size based on the sidebar state
   }
 }

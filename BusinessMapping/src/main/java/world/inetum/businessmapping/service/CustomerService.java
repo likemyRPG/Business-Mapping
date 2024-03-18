@@ -5,8 +5,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import world.inetum.businessmapping.dto.CustomerSectorDTO;
+import world.inetum.businessmapping.dto.Link;
 import world.inetum.businessmapping.entity.CustomerEntity;
 import world.inetum.businessmapping.repository.CustomerRepository;
+
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerService {
@@ -34,7 +37,8 @@ public class CustomerService {
         return customerRepository.findAllBySector(sector);
     }
 
-    public Flux<CustomerSectorDTO> findAllCustomerSectorRelations() {
-        return customerRepository.findAllCustomerSectorRelations();
+    public Flux<Link> findAllCustomerSectorRelationsAsLinks() {
+        return customerRepository.findAllCustomerSectorRelations()
+                .map(dto -> new Link(dto.getCustomerId(), dto.getSectorId()));
     }
 }

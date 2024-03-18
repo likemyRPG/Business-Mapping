@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
-import world.inetum.businessmapping.dto.CustomerSectorDTO;
+import world.inetum.businessmapping.dto.Link;
 import world.inetum.businessmapping.service.CustomerService;
 
 @RestController
@@ -18,7 +18,7 @@ public class GraphController {
     }
 
     @GetMapping("/customers-sectors")
-    public Flux<CustomerSectorDTO> getAllCustomersAndSectors() {
-        return customerService.findAllCustomerSectorRelations();
+    public Flux<Link> getAllCustomersAndSectors() {
+        return customerService.findAllCustomerSectorRelationsAsLinks();
     }
 }
