@@ -186,16 +186,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     // Apply the drag behavior to the nodes
     nodes.call(drag);
-
-    // Add labels to each node
-    svg.selectAll(".label")
-      .data(combinedNodes)
-      .enter().append("text")
-      .attr("x", (d, i) => (i + 1) * (width / (this.customers!.length + 1)))
-      .attr("y", height / 2 + 30)
-      .attr("text-anchor", "middle")
-      .text(d => d.name)
-      .style("font-size", "12px");
   }
 
   private updateSidebar() {
