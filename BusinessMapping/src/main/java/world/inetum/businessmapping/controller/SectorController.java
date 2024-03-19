@@ -19,7 +19,7 @@ public class SectorController {
 
     @Operation(summary = "Get all Sectors", description = "Retrieve a list of all sectors", tags = {"sectors"})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Flux<SectorEntity> getAllCustomersAndSectors() {
+    public Flux<SectorEntity> getAllSectors() {
         return sectorService.findAll();
     }
 }

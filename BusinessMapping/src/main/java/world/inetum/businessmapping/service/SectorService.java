@@ -18,6 +18,4 @@ public class SectorService {
     public Flux<SectorEntity> findAll() {
         return sectorRepository.findAll();
     }
-
-
 }

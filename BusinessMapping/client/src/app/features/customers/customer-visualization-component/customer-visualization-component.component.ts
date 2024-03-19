@@ -80,9 +80,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   createChart(): void {
-    console.log(this.customers);
-    console.log(this.relationships);
-    console.log(this.sectors);
     if (!this.customers || !this.sectors || !this.chartContainer || !this.relationships) return;
 
     const element = this.chartContainer.nativeElement;
@@ -117,24 +114,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .style('padding', '10px');
 
     const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
-      ...this.customers.map(customer => ({ ...customer, type: 'customer' })),
-      ...this.sectors.map(sector => ({ ...sector, type: 'sector' }))
+      ...this.customers.map(customer => ({ ...customer, type: 'customer', id: customer.uuid})),
+      ...this.sectors.map(sector => ({ ...sector, type: 'sector', id: sector.uuid}))
     ];
-
-    // Create a simulation for positioning, if necessary
-    const simulation = d3.forceSimulation(combinedNodes as SimulationNodeDatum[])
-      .force("link", d3.forceLink(this.relationships as any).id(d => (d as any).id))
-      .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter(width / 2, height / 2));
-
-    // Draw links
-    const link = svg.append("g")
-      .attr("class", "links")
-      .selectAll("line")
-      .data(this.relationships)
-      .enter().append("line")
-      .attr("stroke-width", 2)
-      .style("stroke", "#999");
 
     const nodes = svg.selectAll(".node")
       .data(combinedNodes)
@@ -160,8 +142,28 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .on("click", (event, d) => {
         this.selectedCustomer = d as Customer;
         this.updateSidebar(); // A method to handle sidebar
-        console.log(d);
       });
+
+    // Transform the relationships data to match D3's expected format
+    const links = this.relationships.map(r => ({
+      source: r.customerId,
+      target: r.sectorId
+    }));
+
+    // Create a simulation for positioning, if necessary
+    const simulation = d3.forceSimulation(combinedNodes)
+      .force("link", d3.forceLink(links).id(d => (d as any).id))
+      .force("charge", d3.forceManyBody())
+      .force("center", d3.forceCenter(width / 2, height / 2));
+
+    // Draw links
+    const link = svg.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(links)
+      .enter().append("line")
+      .attr("stroke-width", 2)
+      .style("stroke", "#999");
 
     simulation.on("tick", () => {
       link
@@ -176,7 +178,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         // @ts-ignore
         .attr("cy", (d: SimulationNodeDatum) => d.y ?? 0);
     });
-
 
     const drag = d3.drag<SVGCircleElement, any>()
       .on("start", (event, d) => this.dragStarted(event, d))

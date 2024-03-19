@@ -4,7 +4,8 @@ import { Customer } from "./Customer"; // Assuming you already have a Customer m
 import { Sector } from "./Sector";
 
 export interface CustomerSectorRelation {
-  id: string; // The identifier for the relationship, if applicable
+  customerId: number;
   customer: Customer;
+  sectorId: number;
   sector: Sector;
 }
