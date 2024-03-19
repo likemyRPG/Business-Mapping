@@ -32,6 +32,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   selectedCustomer: Customer | null = null;
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
+  private simulation: d3.Simulation<d3.SimulationNodeDatum, undefined> | undefined;
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['customers'] && this.chartContainer) {
       this.createChart();
@@ -65,19 +67,27 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     }
   }
 
-  private dragStarted(event: d3.D3DragEvent<SVGCircleElement, any, any>, d: any) {
-    d3.select(event.sourceEvent.target).raise().classed("active", true);
+  private dragStarted(event: d3.D3DragEvent<any, any, any>, d: any) {
+    if (!event.active) { // @ts-ignore
+      this.simulation.alphaTarget(0.3).restart();
+    } // "Reheat" the simulation
+    d.fx = d.x; // Fix the position of the node
+    d.fy = d.y;
   }
 
-  private dragged(event: d3.D3DragEvent<SVGCircleElement, any, any>, d: any) {
-    d3.select(event.sourceEvent.target)
-      .attr("cx", d.x = event.x)
-      .attr("cy", d.y = event.y);
+  private dragged(event: d3.D3DragEvent<any, any, any>, d: any) {
+    d.fx = event.x;
+    d.fy = event.y;
   }
 
-  private dragEnded(event: d3.D3DragEvent<SVGCircleElement, any, any>, d: any) {
-    d3.select(event.sourceEvent.target).classed("active", false);
+  private dragEnded(event: d3.D3DragEvent<any, any, any>, d: any) {
+    if (!event.active) { // @ts-ignore
+      this.simulation.alphaTarget(0);
+    } // Cool down the simulation
+    d.fx = null; // Unfix the position to let it be controlled by the simulation again
+    d.fy = null;
   }
+
 
   createChart(): void {
     if (!this.customers || !this.sectors || !this.chartContainer || !this.relationships) return;
@@ -118,31 +128,26 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       ...this.sectors.map(sector => ({ ...sector, type: 'sector', id: sector.uuid}))
     ];
 
-    const nodes = svg.selectAll(".node")
+    const node = svg.selectAll(".node")
       .data(combinedNodes)
-      .enter().append("circle")
+      .enter().append("g")
       .attr("class", "node")
+      // @ts-ignore
+      .call(d3.drag() // Initialize drag behavior
+        .on("start", (event, d) => this.dragStarted(event, d))
+        .on("drag", (event, d) => this.dragged(event, d))
+        .on("end", (event, d) => this.dragEnded(event, d)));
+
+    // Append circles to each group
+    node.append("circle")
       .attr("r", d => 'revenue' in d ? radiusScale(d.revenue) : 10)
-      .attr("cx", (d, i) => (i + 1) * (width / (this.customers!.length + 1)))
-      .attr("cy", height / 2)
-      .attr("fill", d => 'revenue' in d ? color(d.revenue) : 'lightgray')
-      .on("mouseover", function(event, d) {
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", .9);
-        tooltip.html(`Name: ${d.name}<br/>${'revenue' in d ? `Revenue: $${d.revenue}` : ''}`)
-          .style("left", (event.pageX) + "px")
-          .style("top", (event.pageY - 28) + "px");
-      })
-      .on("mouseout", function(d) {
-        tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
-      })
-      .on("click", (event, d) => {
-        this.selectedCustomer = d as Customer;
-        this.updateSidebar(); // A method to handle sidebar
-      });
+      .attr("fill", d => 'revenue' in d ? color(d.revenue) : 'lightgray');
+
+    // Append text to each group
+    node.append("text")
+      .attr("dy", ".35em")
+      .attr("text-anchor", "middle") // Centers text on the node's center
+      .text(d => d.name);
 
     // Transform the relationships data to match D3's expected format
     const links = this.relationships.map(r => ({
@@ -151,7 +156,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     }));
 
     // Create a simulation for positioning, if necessary
-    const simulation = d3.forceSimulation(combinedNodes)
+    // @ts-ignore
+    this.simulation = d3.forceSimulation(combinedNodes)
       .force("link", d3.forceLink(links).id(d => (d as any).id))
       .force("charge", d3.forceManyBody())
       .force("center", d3.forceCenter(width / 2, height / 2));
@@ -165,18 +171,16 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .attr("stroke-width", 2)
       .style("stroke", "#999");
 
-    simulation.on("tick", () => {
+    // @ts-ignore
+    this.simulation.on("tick", () => {
       link
         .attr("x1", (d: any) => (d.source as SimulationNodeDatum).x ?? 0)
         .attr("y1", (d: any) => (d.source as SimulationNodeDatum).y ?? 0)
         .attr("x2", (d: any) => (d.target as SimulationNodeDatum).x ?? 0)
         .attr("y2", (d: any) => (d.target as SimulationNodeDatum).y ?? 0);
 
-      nodes
-        // @ts-ignore
-        .attr("cx", (d: SimulationNodeDatum) => d.x ?? 0)
-        // @ts-ignore
-        .attr("cy", (d: SimulationNodeDatum) => d.y ?? 0);
+      node
+        .attr("transform", (d: any) => `translate(${d.x},${d.y})`);
     });
 
     const drag = d3.drag<SVGCircleElement, any>()
@@ -184,8 +188,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .on("drag", (event, d) => this.dragged(event, d))
       .on("end", (event, d) => this.dragEnded(event, d));
 
-    // Apply the drag behavior to the nodes
-    nodes.call(drag);
+    // @ts-ignore
+    node.call(drag);
   }
 
   private updateSidebar() {
