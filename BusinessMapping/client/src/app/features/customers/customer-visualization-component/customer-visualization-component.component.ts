@@ -114,7 +114,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Scale for node sizes
     const radiusScale = d3.scaleSqrt()
       .domain([0, d3.max(this.customers, d => +d.revenue) as number])
-      .range([10, 30]); // Minimum and maximum radius
+      .range([30, 50]); // Minimum and maximum radius
 
     const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
       ...this.customers.map(customer => ({ ...customer, type: 'customer', id: customer.uuid})),
@@ -125,6 +125,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .data(combinedNodes)
       .enter().append("g")
       .attr("class", "node")
+      .style("cursor", "grab")
       // @ts-ignore
       .call(d3.drag() // Initialize drag behavior
         .on("start", (event, d) => this.dragStarted(event, d))
