@@ -4,32 +4,36 @@
   stroke-width: 2px;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 .container {
-  position: relative;
-  height: 100vh; /* Adjust the height as needed */
+  display: flex;
+  height: 100vh; /* Full viewport height */
+  width: 100%; /* Full viewport width */
 }
+.flex {
+  position: relative; /* This ensures that the absolute positioning of the sidebar is relative to this container */
+}
+
 .sidebar {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 20%; /* Adjust the width as needed */
-  max-width: 300px; /* Maximum width */
-  height: 100%;
-  background-color: #1F2937;
-  color: white;
-  z-index: 10;
-  transform: translateX(100%);
-  transition: transform 0.3s ease-in-out;
+  position: absolute; /* Changed from 'fixed' to 'absolute' */
+  top: 0; /* Align to the top of the container */
+  right: 0; /* Align to the right of the container */
+  width: 300px; /* Or whatever your desired width is */
+  height: 100%; /* Full height */
+  background-color: #333; /* Or any color */
+  z-index: 100; /* Ensures it's above the canvas */
+  transform: translateX(100%); /* Hide it offscreen */
+  transition: transform 0.3s ease-in-out; /* Smooth transition for toggling */
 }
-.sidebar.active {
-  transform: translateX(0);
+
+.sidebar-expanded {
+  transform: translateX(0); /* Move sidebar into view */
 }
-.chart-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background-color: #F9FAFB;
-}
+
+
 /* On hover effect for nodes */
 .node-info {
   position: absolute;
@@ -42,4 +46,16 @@
   /* Adjustments for better placement */
   transform: translate(-50%, -100%);
   white-space: nowrap;
+}
+
+.chart-container {
+  flex-grow: 1;
+  background-color: white;
+}
+
+svg * {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }

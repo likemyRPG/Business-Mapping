@@ -12,14 +12,15 @@ import {Customer} from "../../shared/models/Customer";
 import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
 import {Sector} from "../../shared/models/Sector";
 import * as d3 from 'd3';
-import {NgIf} from "@angular/common";
+import {NgClass, NgIf} from "@angular/common";
 import {SimulationNodeDatum} from "d3";
 
 @Component({
   selector: 'app-customer-visualization-component',
   standalone: true,
   imports: [
-    NgIf
+    NgIf,
+    NgClass
   ],
   templateUrl: './customer-visualization-component.component.html',
   styleUrl: './customer-visualization-component.component.css'
@@ -30,6 +31,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   @Input() relationships: CustomerSectorRelation[] | undefined;
   @Input() sectors: Sector[] | undefined;
   selectedCustomer: Customer | null = null;
+  protected sidebarExpanded: boolean = true;
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
   private simulation: d3.Simulation<d3.SimulationNodeDatum, undefined> | undefined;
@@ -94,13 +96,15 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     const element = this.chartContainer.nativeElement;
     const width = element.offsetWidth;
-    const height = 500; // Adjust as necessary
+    const height = window.innerHeight;
 
     d3.select(element).selectAll('svg').remove(); // Clear the existing chart
 
     const svg = d3.select(element).append('svg')
-      .attr('width', width)
-      .attr('height', height)
+      .attr('width', width) // Fixed width
+      .attr('height', height) // Fixed height
+      .attr('viewBox', `0 0 ${width} ${height}`) // Responsive SVG
+      .attr('preserveAspectRatio', 'xMidYMid meet') // Preserve aspect ratio
       .append('g');
 
     // Scale for node colors based on revenue
@@ -110,18 +114,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Scale for node sizes
     const radiusScale = d3.scaleSqrt()
       .domain([0, d3.max(this.customers, d => +d.revenue) as number])
-      .range([5, 20]); // Minimum and maximum radius
-
-    // Tooltip for displaying customer details
-    const tooltip = d3.select(element).append('div')
-      .attr('class', 'tooltip')
-      .style('opacity', 0)
-      .style('position', 'absolute')
-      .style('background-color', 'white')
-      .style('border', 'solid')
-      .style('border-width', '1px')
-      .style('border-radius', '5px')
-      .style('padding', '10px');
+      .range([10, 30]); // Minimum and maximum radius
 
     const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
       ...this.customers.map(customer => ({ ...customer, type: 'customer', id: customer.uuid})),
@@ -136,7 +129,12 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .call(d3.drag() // Initialize drag behavior
         .on("start", (event, d) => this.dragStarted(event, d))
         .on("drag", (event, d) => this.dragged(event, d))
-        .on("end", (event, d) => this.dragEnded(event, d)));
+        .on("end", (event, d) => this.dragEnded(event, d)))
+      .on('mouseover', (event, d) => {
+        this.selectedCustomer = d as Customer;
+        this.updateSidebar();
+      }
+    );
 
     // Append circles to each group
     node.append("circle")
@@ -146,7 +144,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Append text to each group
     node.append("text")
       .attr("dy", ".35em")
-      .attr("text-anchor", "middle") // Centers text on the node's center
+      .attr("text-anchor", "middle")
+      .style("user-select", "none") // Prevent text selection
+      .style("pointer-events", "none") // Ignore pointer events
       .text(d => d.name);
 
     // Transform the relationships data to match D3's expected format
@@ -158,9 +158,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Create a simulation for positioning, if necessary
     // @ts-ignore
     this.simulation = d3.forceSimulation(combinedNodes)
-      .force("link", d3.forceLink(links).id(d => (d as any).id))
-      .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter(width / 2, height / 2));
+      .force("link", d3.forceLink(links).id(d => (d as any).id).distance(100))
+      .force("charge", d3.forceManyBody().strength(-100).distanceMax(150).distanceMin(20))
+      .force("center", d3.forceCenter(width / 2, height / 2).strength(0.1))
+      .force("collide", d3.forceCollide().radius(d => 'revenue' in d ? radiusScale((d as Customer).revenue) : 10))
 
     // Draw links
     const link = svg.append("g")
@@ -194,5 +195,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
   private updateSidebar() {
     this.changeDetectorRef.detectChanges();
+  }
+
+  toggleSidebar() {
+    this.sidebarExpanded = !this.sidebarExpanded;
   }
 }
