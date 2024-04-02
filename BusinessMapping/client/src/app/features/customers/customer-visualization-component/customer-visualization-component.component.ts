@@ -36,6 +36,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
   private simulation: d3.Simulation<d3.SimulationNodeDatum, undefined> | undefined;
 
+  private zoomBehavior: any;
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['customers'] && this.chartContainer) {
       this.createChart();
@@ -70,12 +72,16 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   private dragStarted(event: d3.D3DragEvent<any, any, any>, d: any) {
-    if (!event.active) { // @ts-ignore
+    if (!event.active)
+      // @ts-ignore
       this.simulation.alphaTarget(0.3).restart();
-    } // "Reheat" the simulation
-    d.fx = d.x; // Fix the position of the node
+
+    event.sourceEvent.stopPropagation(); // Prevent zoom behavior when dragging
+
+    d.fx = d.x;
     d.fy = d.y;
   }
+
 
   private dragged(event: d3.D3DragEvent<any, any, any>, d: any) {
     d.fx = event.x;
@@ -83,10 +89,12 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   private dragEnded(event: d3.D3DragEvent<any, any, any>, d: any) {
-    if (!event.active) { // @ts-ignore
+    if (!event.active) {
+      // @ts-ignore
       this.simulation.alphaTarget(0);
-    } // Cool down the simulation
-    d.fx = null; // Unfix the position to let it be controlled by the simulation again
+      }
+
+    d.fx = null;
     d.fy = null;
   }
 
@@ -100,15 +108,28 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     d3.select(element).selectAll('svg').remove(); // Clear the existing chart
 
+    this.zoomBehavior = d3.zoom()
+      .scaleExtent([0.1, 10]) // Optional: Restrict zoom scale for better control
+      .on("zoom", (event) => {
+        svg.attr("transform", event.transform); // Apply transformation
+      });
+
     const svg = d3.select(element).append('svg')
       .attr('width', width) // Fixed width
       .attr('height', height) // Fixed height
       .attr('viewBox', `0 0 ${width} ${height}`) // Responsive SVG
       .attr('preserveAspectRatio', 'xMidYMid meet') // Preserve aspect ratio
+      .call(this.zoomBehavior)
       .append('g');
 
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .style("fill", "none")
+      .style("pointer-events", "all");
+
     // Scale for node colors based on revenue
-    const color = d3.scaleSequential(d3.interpolateBlues)
+    const color = d3.scaleSequential(d3.interpolateViridis)
       .domain([0, d3.max(this.customers, d => +d.revenue) as number]);
 
     // Scale for node sizes
@@ -159,18 +180,19 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Create a simulation for positioning, if necessary
     // @ts-ignore
     this.simulation = d3.forceSimulation(combinedNodes)
-      .force("link", d3.forceLink(links).id(d => (d as any).id).distance(100))
-      .force("charge", d3.forceManyBody().strength(-100).distanceMax(150).distanceMin(20))
-      .force("center", d3.forceCenter(width / 2, height / 2).strength(0.1))
-      .force("collide", d3.forceCollide().radius(d => 'revenue' in d ? radiusScale((d as Customer).revenue) : 10))
+      .force("link", d3.forceLink(links).id(d => (d as any).id).distance(100).strength(1))
+      .force("charge", d3.forceManyBody().strength(-50).distanceMax(150).distanceMin(20))
+      .force("center", d3.forceCenter(width / 2, height / 2))
 
-    // Draw links
+      .force("collide", d3.forceCollide(d => radiusScale((d as Customer).revenue) + 2))
+
+    // Draw links (Arrows)
     const link = svg.append("g")
       .attr("class", "links")
       .selectAll("line")
       .data(links)
       .enter().append("line")
-      .attr("stroke-width", 2)
+      .attr("stroke-width", 1)
       .style("stroke", "#999");
 
     // @ts-ignore
@@ -186,7 +208,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     });
 
     const drag = d3.drag<SVGCircleElement, any>()
-      .on("start", (event, d) => this.dragStarted(event, d))
+      .on("start", (event, d) => {
+        event.sourceEvent.stopPropagation(); // Prevent zoom behavior when dragging
+        this.dragStarted(event, d)
+      })
       .on("drag", (event, d) => this.dragged(event, d))
       .on("end", (event, d) => this.dragEnded(event, d));
 
@@ -200,5 +225,24 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
   toggleSidebar() {
     this.sidebarExpanded = !this.sidebarExpanded;
+  }
+
+  zoomIn() {
+    // @ts-ignore
+    this.zoomBy(1.2)
+  }
+
+  zoomOut() {
+    // @ts-ignore
+    this.zoomBy(0.8)
+  }
+
+  resetZoom() {
+    // @ts-ignore
+    d3.select('svg').transition().duration(750).call(this.zoomBehavior.transform, d3.zoomIdentity);
+  }
+
+  private zoomBy(factor: number): void {
+    d3.select('svg').transition().duration(750).call(this.zoomBehavior.scaleBy, factor);
   }
 }
