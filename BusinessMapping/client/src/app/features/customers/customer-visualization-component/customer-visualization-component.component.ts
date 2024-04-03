@@ -77,7 +77,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   private dragStarted(event: d3.D3DragEvent<any, any, any>, d: any) {
     if (!event.active)
       // @ts-ignore
-      this.simulation.alphaTarget(0.3).restart();
+      this.simulation.alphaTarget(0.1).restart();
 
     event.sourceEvent.stopPropagation(); // Prevent zoom behavior when dragging
 
@@ -226,7 +226,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Create a simulation for positioning, if necessary
     // @ts-ignore
     this.simulation = d3.forceSimulation(combinedNodes)
-      .force("link", d3.forceLink(links).id(d => (d as any).id).distance(100).strength(1))
+      .force("link", d3.forceLink(links).id(d => (d as any).id).distance(100).strength(.1))
       .force("charge", d3.forceManyBody().strength(-50).distanceMax(150).distanceMin(20))
       .force("center", d3.forceCenter(width / 2, height / 2))
 
@@ -234,7 +234,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         // @ts-ignore
         return 'revenue' in d ? customerRadiusScale(d.revenue) : sectorRadiusScale(sectorRevenues[d.uuid]);
       }
-      ));
+      ).strength(0.2));
 
     // Draw links (Arrows)
     const link = svg.append("g")
