@@ -8,4 +8,6 @@ export interface CustomerSectorRelation {
   customer: Customer;
   sectorId: number;
   sector: Sector;
+  revenue: number;
+  type: 'customerSectorRelation';
 }

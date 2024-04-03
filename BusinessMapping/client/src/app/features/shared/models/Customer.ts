@@ -7,4 +7,5 @@ export interface Customer {
   numberOfEmployees: number;
   industry: string;
   revenue: number;
+  type: 'Customer';
 }

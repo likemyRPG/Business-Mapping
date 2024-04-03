@@ -1,3 +1,4 @@
+// @ts-ignore
 import {
   AfterViewInit,
   ChangeDetectorRef,
@@ -31,6 +32,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   @Input() relationships: CustomerSectorRelation[] | undefined;
   @Input() sectors: Sector[] | undefined;
   selectedCustomer: Customer | null = null;
+  selectedNode: Customer | Sector | null = null;
+  selectedNodeType: string = ''; // Track the type of the selected node
   protected sidebarExpanded: boolean = true;
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
@@ -106,6 +109,11 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     const width = element.offsetWidth;
     const height = window.innerHeight;
 
+    // Define two color scales for customers and sectors
+    const customerColor = d3.scaleOrdinal().range(["#3182bd"]); // Example blue color for customers
+    const sectorColor = d3.scaleOrdinal().range(["#31a354"]); // Example green color for sectors
+
+
     d3.select(element).selectAll('svg').remove(); // Clear the existing chart
 
     this.zoomBehavior = d3.zoom()
@@ -128,18 +136,40 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .style("fill", "none")
       .style("pointer-events", "all");
 
-    // Scale for node colors based on revenue
-    const color = d3.scaleSequential(d3.interpolateViridis)
-      .domain([0, d3.max(this.customers, d => +d.revenue) as number]);
+    // Calculate combined revenue for each sector
+    const sectorRevenues = this.relationships.reduce((acc, cur) => {
+      // @ts-ignore
+      const customer = this.customers.find(c => c.uuid === cur.customerId);
+      if (customer) {
+        // @ts-ignore
+        acc[cur.sectorId] = (acc[cur.sectorId] || 0) + customer.revenue;
+      }
+      return acc;
+    }, {});
 
-    // Scale for node sizes
-    const radiusScale = d3.scaleSqrt()
-      .domain([0, d3.max(this.customers, d => +d.revenue) as number])
-      .range([30, 50]); // Minimum and maximum radius
+    // New code to update each sector's revenue property
+    this.sectors.forEach(sector => {
+      // @ts-ignore
+      sector.revenue = sectorRevenues[sector.uuid] || 0;
+    });
 
+    // Adjust the radiusScale for customers
+    const customerRadiusScale = d3.scaleSqrt()
+      // @ts-ignore
+      .domain([0, d3.max(this.customers, d => +d.revenue)])
+      .range([10, 30]); // Adjust min and max radius as needed
+
+// Create a scale for sector nodes based on combined revenue
+    const sectorRadiusScale = d3.scaleSqrt()
+      // @ts-ignore
+      .domain([0, d3.max(Object.values(sectorRevenues))])
+      .range([30, 50]); // Adjust min and max radius as needed
+
+    // @ts-ignore
     const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
       ...this.customers.map(customer => ({ ...customer, type: 'customer', id: customer.uuid})),
-      ...this.sectors.map(sector => ({ ...sector, type: 'sector', id: sector.uuid}))
+      // @ts-ignore
+      ...this.sectors.map(sector => ({ ...sector, type: 'sector', id: sector.uuid, revenue: sectorRevenues[sector.uuid]}))
     ];
 
     const node = svg.selectAll(".node")
@@ -154,14 +184,30 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         .on("end", (event, d) => this.dragEnded(event, d)))
       .on('mouseover', (event, d) => {
         this.selectedCustomer = d as Customer;
+        this.selectedNode = d;
+        this.selectedNodeType = (d as any).type.toUpperCase();
         this.updateSidebar();
       }
     );
 
     // Append circles to each group
     node.append("circle")
-      .attr("r", d => 'revenue' in d ? radiusScale(d.revenue) : 10)
-      .attr("fill", d => 'revenue' in d ? color(d.revenue) : 'lightgray');
+      // @ts-ignore
+      .attr("r", d => 'revenue' in d ? customerRadiusScale(d.revenue) : sectorRadiusScale(sectorRevenues[d.uuid]))
+      // @ts-ignore
+      .attr("fill", d => d.type === 'customer' ? customerColor() : sectorColor())
+
+    node.append("circle")
+      .attr("r", d => {
+        if ((d as any).type === 'customer') {
+          return customerRadiusScale((d as any).revenue);
+        } else if ((d as any).type === 'sector') {
+          return sectorRadiusScale((d as any).revenue);
+        }
+        return 10;
+      })
+      // @ts-ignore
+      .attr("fill", d => (d as any).type === 'customer' ? customerColor() : sectorColor());
 
     // Append text to each group
     node.append("text")
@@ -184,7 +230,11 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .force("charge", d3.forceManyBody().strength(-50).distanceMax(150).distanceMin(20))
       .force("center", d3.forceCenter(width / 2, height / 2))
 
-      .force("collide", d3.forceCollide(d => radiusScale((d as Customer).revenue) + 2))
+      .force("collide", d3.forceCollide(d => {
+        // @ts-ignore
+        return 'revenue' in d ? customerRadiusScale(d.revenue) : sectorRadiusScale(sectorRevenues[d.uuid]);
+      }
+      ));
 
     // Draw links (Arrows)
     const link = svg.append("g")
@@ -217,6 +267,35 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     // @ts-ignore
     node.call(drag);
+
+    const legend = svg.append("g")
+      .attr("class", "legend")
+      .attr("transform", "translate(20,20)"); // Adjust position as needed
+
+    legend.append("circle")
+      .attr("r", 6)
+      // @ts-ignore
+      .attr("fill", customerColor)
+      .attr("cy", 0);
+
+    legend.append("text")
+      .attr("x", 12)
+      .attr("y", 0)
+      .attr("dy", "0.35em")
+      .text("Customer");
+
+    legend.append("circle")
+      .attr("r", 6)
+      // @ts-ignore
+      .attr("fill", sectorColor)
+      .attr("cy", 20);
+
+    legend.append("text")
+      .attr("x", 12)
+      .attr("y", 20)
+      .attr("dy", "0.35em")
+      .text("Sector");
+
   }
 
   private updateSidebar() {
@@ -237,12 +316,31 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     this.zoomBy(0.8)
   }
 
-  resetZoom() {
+  private zoomBy(factor: number): void {
     // @ts-ignore
-    d3.select('svg').transition().duration(750).call(this.zoomBehavior.transform, d3.zoomIdentity);
+    const svgElement = d3.select(this.chartContainer.nativeElement).select('svg');
+    // @ts-ignore
+    const transform = d3.zoomTransform(svgElement.node());
+
+    // Apply the zoom factor based on the current transform
+    const newTransform = transform.scale(factor);
+
+    svgElement.transition().duration(750)
+      .call(this.zoomBehavior.transform, newTransform);
   }
 
-  private zoomBy(factor: number): void {
-    d3.select('svg').transition().duration(750).call(this.zoomBehavior.scaleBy, factor);
+  resetZoom() {
+    // @ts-ignore
+    const svgElement = d3.select(this.chartContainer.nativeElement).select('svg');
+    svgElement.transition().duration(750)
+      .call(this.zoomBehavior.transform, d3.zoomIdentity);
+  }
+
+  isCustomer(node: any): node is Customer {
+    return node?.type === 'customer';
+  }
+
+  isSector(node: any): node is Sector {
+    return node?.type === 'sector';
   }
 }
