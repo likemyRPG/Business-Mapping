@@ -10,10 +10,13 @@
         <div class="mb-2 font-bold text-xl">{{ card.title }}</div>
         <!-- Placeholder for dynamic component loading -->
         <!-- Example of using *ngIf to load different components based on the card title -->
-        <ng-container *ngIf="card.title === 'Revenue Overview'">
+        <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
           <app-revenue-overview [customers]="customers"></app-revenue-overview>
         </ng-container>
-      </div>
+        <ng-container *ngIf="card.title === 'Sector Ratio By Customers'">
+          <app-sector-ratio [customers]="customers" [sectors]="sectors" [relationships]="relationships" ></app-sector-ratio>
+        </ng-container>
+        </div>
     </div>
   </div>
 </div>
