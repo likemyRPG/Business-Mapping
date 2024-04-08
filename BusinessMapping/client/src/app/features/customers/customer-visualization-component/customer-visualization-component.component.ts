@@ -167,9 +167,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     // @ts-ignore
     const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
-      ...this.customers.map(customer => ({ ...customer, type: 'customer', id: customer.uuid})),
+      ...this.customers.map(customer => ({ ...customer, type: 'customer', id: customer.uuid, visible: false})),
       // @ts-ignore
-      ...this.sectors.map(sector => ({ ...sector, type: 'sector', id: sector.uuid, revenue: sectorRevenues[sector.uuid]}))
+      ...this.sectors.map(sector => ({ ...sector, type: 'sector', id: sector.uuid, revenue: sectorRevenues[sector.uuid], visible: true}))
     ];
 
     const node = svg.selectAll(".node")
@@ -189,6 +189,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         this.updateSidebar();
       }
     );
+
+    node.style("display", d => (d as any).visible ? "block" : "none");
 
     // Append circles to each group
     node.append("circle")
@@ -216,6 +218,30 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .style("user-select", "none") // Prevent text selection
       .style("pointer-events", "none") // Ignore pointer events
       .text(d => d.name);
+
+    // @ts-ignore
+    node.filter(d => d.type === 'sector')
+      .on('click', (event, d) => {
+        toggleCustomersVisibility(d.id);
+        event.stopPropagation(); // Prevent the click from triggering zoom behavior
+      });
+
+    const toggleCustomersVisibility = (sectorId: string) => {
+      // @ts-ignore
+      const relatedCustomers = this.relationships.filter(r => r.sectorId === sectorId).map(r => r.customerId);
+      combinedNodes.forEach(node => {
+        // @ts-ignore
+        if (node.type === 'customer' && relatedCustomers.includes(node.id)) {
+          // @ts-ignore
+          node.visible = !node.visible; // Toggle visibility
+        }
+      });
+      // Update the node display based on the new visibility states
+      svg.selectAll(".node")
+        .style("display", d => (d as any).visible ? "block" : "none");
+
+      updateLinkVisibility();
+    };
 
     // Transform the relationships data to match D3's expected format
     const links = this.relationships.map(r => ({
@@ -256,6 +282,21 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       node
         .attr("transform", (d: any) => `translate(${d.x},${d.y})`);
     });
+
+
+    const updateLinkVisibility = () => {
+      link.style("display", d => {
+        // @ts-ignore
+        const sourceNode = combinedNodes.find(node => node.id === d.source.id);
+        // @ts-ignore
+        const targetNode = combinedNodes.find(node => node.id === d.target.id);
+        // Hide the link if either the source or target node is invisible
+        // @ts-ignore
+        return sourceNode.visible && targetNode.visible ? null : "none";
+      });
+    };
+
+    updateLinkVisibility();
 
     const drag = d3.drag<SVGCircleElement, any>()
       .on("start", (event, d) => {
