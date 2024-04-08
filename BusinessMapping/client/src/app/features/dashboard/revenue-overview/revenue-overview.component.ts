@@ -62,7 +62,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
     if (!this.customers || !this.chartContainer) return;
 
     const element = this.chartContainer.nativeElement;
-    const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+    const margin = { top: 20, right: 20, bottom: 100, left: 60 };
     const containerWidth = element.offsetWidth;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
@@ -87,9 +87,8 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
 
     x.domain(data.map(d => d.name));
 
-    console.log("Data for chart:", data);
     const maxY = d3.max(data, d => +d.revenue);
-    console.log("Max Y value:", maxY);
+
     y.domain([0, maxY ?? 0]);
 
     svg.selectAll(".bar")
@@ -102,9 +101,18 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
       .attr("height", d => height - y(d.revenue))
       .attr("fill", "steelblue");
 
+    const labelFrequency = 2;
+
     svg.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", ".15em")
+      .attr("transform", "rotate(-65)")
+      // @ts-ignore
+      .text((d, i) => i % labelFrequency === 0 ? d : '');
 
     svg.append("g")
       .call(d3.axisLeft(y));
@@ -119,7 +127,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
         .duration(200)
         .style("opacity", .9);
       // @ts-ignore
-        tooltip.html(`Revenue: ${d.revenue ?? 0}`)
+        tooltip.html(`Customer: ${d.name} <br> Revenue: €${d.revenue ?? 0}`)
         .style("left", (event.pageX) + "px")
         .style("top", (event.pageY - 28) + "px");
     })
