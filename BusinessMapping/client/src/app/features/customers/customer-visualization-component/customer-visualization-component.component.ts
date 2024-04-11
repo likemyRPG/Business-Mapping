@@ -13,8 +13,8 @@ import {Customer} from "../../shared/models/Customer";
 import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
 import {Sector} from "../../shared/models/Sector";
 import * as d3 from 'd3';
+import {SimulationNodeDatum} from 'd3';
 import {DecimalPipe, NgClass, NgIf} from "@angular/common";
-import {SimulationNodeDatum} from "d3";
 
 @Component({
   selector: 'app-customer-visualization-component',

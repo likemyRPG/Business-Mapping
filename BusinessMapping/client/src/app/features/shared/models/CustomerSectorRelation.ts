@@ -1,7 +1,7 @@
 // src/app/shared/models/CustomerSectorRelation.ts
 
-import { Customer } from "./Customer"; // Assuming you already have a Customer model defined
-import { Sector } from "./Sector";
+import {Customer} from "./Customer"; // Assuming you already have a Customer model defined
+import {Sector} from "./Sector";
 
 export interface CustomerSectorRelation {
   customerId: number;

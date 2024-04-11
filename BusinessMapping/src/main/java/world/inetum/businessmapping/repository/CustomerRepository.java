@@ -2,8 +2,8 @@ package world.inetum.businessmapping.repository;
 
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
-import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import world.inetum.businessmapping.dto.CustomerSectorDto;
 import world.inetum.businessmapping.entity.CustomerEntity;
 

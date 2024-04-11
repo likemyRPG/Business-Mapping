@@ -1,12 +1,4 @@
-import {
-  Component,
-  ViewChild,
-  ElementRef,
-  Input,
-  AfterViewInit,
-  SimpleChanges,
-  OnChanges
-} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
 import * as d3 from 'd3';
 import {Customer} from "../../shared/models/Customer";
 import {FormsModule} from "@angular/forms";

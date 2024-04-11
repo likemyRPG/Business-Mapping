@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { SectorDistributionComponent } from './sector-distribution.component';
+import {SectorDistributionComponent} from './sector-distribution.component';
 
 describe('SectorDistributionComponent', () => {
   let component: SectorDistributionComponent;
@@ -11,7 +11,7 @@ describe('SectorDistributionComponent', () => {
       imports: [SectorDistributionComponent]
     })
     .compileComponents();
-    
+
     fixture = TestBed.createComponent(SectorDistributionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

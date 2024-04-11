@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { ProjectSuccessRateComponent } from './project-success-rate.component';
+import {ProjectSuccessRateComponent} from './project-success-rate.component';
 
 describe('ProjectSuccessRateComponent', () => {
   let component: ProjectSuccessRateComponent;
@@ -11,7 +11,7 @@ describe('ProjectSuccessRateComponent', () => {
       imports: [ProjectSuccessRateComponent]
     })
     .compileComponents();
-    
+
     fixture = TestBed.createComponent(ProjectSuccessRateComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

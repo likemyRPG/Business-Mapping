@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewInit} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
 import {Customer} from "../../shared/models/Customer";
 import {Sector} from '../../shared/models/Sector';
 import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
