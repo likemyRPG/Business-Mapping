@@ -1,15 +1,15 @@
 package world.inetum.businessmapping.dto;
 
-public class Link {
+public class LinkDto {
 
     private String customerId;
     private String sectorId;
 
-    public Link() {
+    public LinkDto() {
         // Default constructor
     }
 
-    public Link(String customerId, String sectorId) {
+    public LinkDto(String customerId, String sectorId) {
         this.customerId = customerId;
         this.sectorId = sectorId;
     }
