@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import world.inetum.businessmapping.dto.LinkDto;
+import world.inetum.businessmapping.dto.LinkCustomerSectorDto;
 import world.inetum.businessmapping.entity.CustomerEntity;
 import world.inetum.businessmapping.repository.CustomerRepository;
 
@@ -34,8 +34,8 @@ public class CustomerService {
         return customerRepository.findAllBySector(sector);
     }
 
-    public Flux<LinkDto> findAllCustomerSectorRelationsAsLinks() {
+    public Flux<LinkCustomerSectorDto> findAllCustomerSectorRelationsAsLinks() {
         return customerRepository.findAllCustomerSectorRelations()
-                .map(dto -> new LinkDto(dto.getCustomerId(), dto.getSectorId()));
+                .map(dto -> new LinkCustomerSectorDto(dto.getCustomerId(), dto.getSectorId()));
     }
 }

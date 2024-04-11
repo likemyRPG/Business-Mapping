@@ -1,24 +1,48 @@
 package world.inetum.businessmapping.entity;
 
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 
+@Data
 @Node("Project")
+@NoArgsConstructor
 public class ProjectEntity {
     @Id
-    @GeneratedValue
-    private Long id;
+    private String uuid;
 
     @Property("name")
-    private final String name;
+    private String name;
 
     @Property("success")
-    private final boolean success;
+    private boolean success;
 
-    public ProjectEntity(String name) {
-        this.name = name;
-        this.success = true;
-    }
+    @Property("year")
+    private int year;
+
+    @Property("status")
+    private String status;
+
+    @Property("startDate")
+    private String startDate;
+
+    @Property("endDate")
+    private String endDate;
+
+    @Property("scope")
+    private String scope;
+
+    @Property("budget")
+    private long budget;
+
+    @Property("onTime")
+    private boolean onTime;
+
+    @Property("actualCost")
+    private long actualCost;
+
+    @Property("impact")
+    private String impact;
 }

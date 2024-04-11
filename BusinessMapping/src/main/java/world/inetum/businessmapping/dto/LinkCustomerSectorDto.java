@@ -1,33 +1,18 @@
 package world.inetum.businessmapping.dto;
 
-public class LinkDto {
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
+public class LinkCustomerSectorDto {
+
+    // Getters and Setters
     private String customerId;
     private String sectorId;
 
-    public LinkDto() {
-        // Default constructor
-    }
-
-    public LinkDto(String customerId, String sectorId) {
+    public LinkCustomerSectorDto(String customerId, String sectorId) {
         this.customerId = customerId;
-        this.sectorId = sectorId;
-    }
-
-    // Getters and Setters
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public String getSectorId() {
-        return sectorId;
-    }
-
-    public void setSectorId(String sectorId) {
         this.sectorId = sectorId;
     }
 
