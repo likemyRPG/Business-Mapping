@@ -33,11 +33,12 @@ export class DashboardComponent {
   sectors: Sector[] = [];
   relationships: CustomerSectorRelation[] = [];
   cards = [
-    { title: 'Customer Revenue Overview', isLarge: true },
-    { title: 'Amount of Customers Per Sector', isLarge: false },
+    {title: 'Customer Revenue Overview', isLarge: true},
+    {title: 'Amount of Customers Per Sector', isLarge: false},
   ];
 
-  constructor(private customerService: CustomerService) {}
+  constructor(private customerService: CustomerService) {
+  }
 
   ngOnInit() {
     this.customerService.getAllCustomers().subscribe((data: Customer[]) => {

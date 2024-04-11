@@ -36,11 +36,11 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   selectedNode: Customer | Sector | null = null;
   selectedNodeType: string = ''; // Track the type of the selected node
   protected sidebarExpanded: boolean = true;
-  constructor(private changeDetectorRef: ChangeDetectorRef) {}
-
   private simulation: d3.Simulation<d3.SimulationNodeDatum, undefined> | undefined;
-
   private zoomBehavior: any;
+
+  constructor(private changeDetectorRef: ChangeDetectorRef) {
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['customers'] && this.chartContainer) {
@@ -74,34 +74,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       this.createChart();
     }
   }
-
-  private dragStarted(event: d3.D3DragEvent<any, any, any>, d: any) {
-    if (!event.active)
-      // @ts-ignore
-      this.simulation.alphaTarget(0.1).restart();
-
-    event.sourceEvent.stopPropagation(); // Prevent zoom behavior when dragging
-
-    d.fx = d.x;
-    d.fy = d.y;
-  }
-
-
-  private dragged(event: d3.D3DragEvent<any, any, any>, d: any) {
-    d.fx = event.x;
-    d.fy = event.y;
-  }
-
-  private dragEnded(event: d3.D3DragEvent<any, any, any>, d: any) {
-    if (!event.active) {
-      // @ts-ignore
-      this.simulation.alphaTarget(0);
-      }
-
-    d.fx = null;
-    d.fy = null;
-  }
-
 
   createChart(): void {
     if (!this.customers || !this.sectors || !this.chartContainer || !this.relationships) return;
@@ -168,9 +140,15 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     // @ts-ignore
     const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
-      ...this.customers.map(customer => ({ ...customer, type: 'customer', id: customer.uuid, visible: false})),
+      ...this.customers.map(customer => ({...customer, type: 'customer', id: customer.uuid, visible: false})),
       // @ts-ignore
-      ...this.sectors.map(sector => ({ ...sector, type: 'sector', id: sector.uuid, revenue: sectorRevenues[sector.uuid], visible: true}))
+      ...this.sectors.map(sector => ({
+        ...sector,
+        type: 'sector',
+        id: sector.uuid,
+        revenue: sectorRevenues[sector.uuid],
+        visible: true
+      }))
     ];
 
     // Transform the relationships data to match D3's expected format
@@ -199,12 +177,12 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         .on("drag", (event, d) => this.dragged(event, d))
         .on("end", (event, d) => this.dragEnded(event, d)))
       .on('mouseover', (event, d) => {
-        this.selectedCustomer = d as Customer;
-        this.selectedNode = d;
-        this.selectedNodeType = (d as any).type.toUpperCase();
-        this.updateSidebar();
-      }
-    );
+          this.selectedCustomer = d as Customer;
+          this.selectedNode = d;
+          this.selectedNodeType = (d as any).type.toUpperCase();
+          this.updateSidebar();
+        }
+      );
 
     node.style("display", d => (d as any).visible ? "block" : "none");
 
@@ -267,9 +245,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .force("center", d3.forceCenter(width / 2, height / 2))
 
       .force("collide", d3.forceCollide(d => {
-        // @ts-ignore
-        return 'revenue' in d ? customerRadiusScale(d.revenue) : sectorRadiusScale(sectorRevenues[d.uuid]);
-      }
+          // @ts-ignore
+          return 'revenue' in d ? customerRadiusScale(d.revenue) : sectorRadiusScale(sectorRevenues[d.uuid]);
+        }
       ).strength(0.2));
 
     // @ts-ignore
@@ -340,10 +318,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
   }
 
-  private updateSidebar() {
-    this.changeDetectorRef.detectChanges();
-  }
-
   toggleSidebar() {
     this.sidebarExpanded = !this.sidebarExpanded;
   }
@@ -356,19 +330,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   zoomOut() {
     // @ts-ignore
     this.zoomBy(0.8)
-  }
-
-  private zoomBy(factor: number): void {
-    // @ts-ignore
-    const svgElement = d3.select(this.chartContainer.nativeElement).select('svg');
-    // @ts-ignore
-    const transform = d3.zoomTransform(svgElement.node());
-
-    // Apply the zoom factor based on the current transform
-    const newTransform = transform.scale(factor);
-
-    svgElement.transition().duration(750)
-      .call(this.zoomBehavior.transform, newTransform);
   }
 
   resetZoom() {
@@ -384,6 +345,49 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
   isSector(node: any): node is Sector {
     return node?.type === 'sector';
+  }
+
+  private dragStarted(event: d3.D3DragEvent<any, any, any>, d: any) {
+    if (!event.active)
+      // @ts-ignore
+      this.simulation.alphaTarget(0.1).restart();
+
+    event.sourceEvent.stopPropagation(); // Prevent zoom behavior when dragging
+
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  private dragged(event: d3.D3DragEvent<any, any, any>, d: any) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+
+  private dragEnded(event: d3.D3DragEvent<any, any, any>, d: any) {
+    if (!event.active) {
+      // @ts-ignore
+      this.simulation.alphaTarget(0);
+    }
+
+    d.fx = null;
+    d.fy = null;
+  }
+
+  private updateSidebar() {
+    this.changeDetectorRef.detectChanges();
+  }
+
+  private zoomBy(factor: number): void {
+    // @ts-ignore
+    const svgElement = d3.select(this.chartContainer.nativeElement).select('svg');
+    // @ts-ignore
+    const transform = d3.zoomTransform(svgElement.node());
+
+    // Apply the zoom factor based on the current transform
+    const newTransform = transform.scale(factor);
+
+    svgElement.transition().duration(750)
+      .call(this.zoomBehavior.transform, newTransform);
   }
 }
 

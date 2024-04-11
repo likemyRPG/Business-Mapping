@@ -14,9 +14,10 @@
           <app-revenue-overview [customers]="customers"></app-revenue-overview>
         </ng-container>
         <ng-container *ngIf="card.title === 'Amount of Customers Per Sector'">
-          <app-sector-ratio [customers]="customers" [sectors]="sectors" [relationships]="relationships" ></app-sector-ratio>
+          <app-sector-ratio [customers]="customers" [relationships]="relationships"
+                            [sectors]="sectors"></app-sector-ratio>
         </ng-container>
-        </div>
+      </div>
     </div>
   </div>
 </div>

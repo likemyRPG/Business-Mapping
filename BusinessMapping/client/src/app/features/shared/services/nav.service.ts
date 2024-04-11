@@ -6,7 +6,8 @@ import {NavItem} from "../models/NavItem";
 })
 export class NavService {
 
-  constructor() { }
+  constructor() {
+  }
 
   getNavItems(): NavItem[] {
     return [

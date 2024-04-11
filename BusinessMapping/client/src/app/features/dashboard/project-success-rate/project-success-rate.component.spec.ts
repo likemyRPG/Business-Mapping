@@ -10,7 +10,7 @@ describe('ProjectSuccessRateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProjectSuccessRateComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ProjectSuccessRateComponent);
     component = fixture.componentInstance;

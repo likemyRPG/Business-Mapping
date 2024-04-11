@@ -10,7 +10,7 @@ describe('RevenueOverviewComponent', () => {
     await TestBed.configureTestingModule({
       imports: [RevenueOverviewComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(RevenueOverviewComponent);
     component = fixture.componentInstance;

@@ -23,12 +23,12 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
 
   selectedFileType = 'pdf';
 
-  toggleDropdown() {
-    this.showDropdown = !this.showDropdown;
-  }
-
   constructor() {
     console.log('RevenueOverviewComponent');
+  }
+
+  toggleDropdown() {
+    this.showDropdown = !this.showDropdown;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -68,7 +68,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
     if (!this.customers || !this.chartContainer) return;
 
     const element = this.chartContainer.nativeElement;
-    const margin = { top: 20, right: 20, bottom: 100, left: 60 };
+    const margin = {top: 20, right: 20, bottom: 100, left: 60};
     const containerWidth = element.offsetWidth;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
@@ -129,17 +129,17 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
 
     svg.selectAll(".bar")
       .on("mouseover", (event, d) => {
-      tooltip.transition()
-        .duration(200)
-        .style("opacity", .9);
-      // @ts-ignore
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", .9);
+        // @ts-ignore
         // Displat revenue as a number with commas
         tooltip.html(`Customer: ${d.name} <br> Revenue: €${d.revenue.toLocaleString() || 0}`)
-        .style("left", (event.pageX) + "px")
-        .style("top", (event.pageY - 28) + "px");
-    })
+          .style("left", (event.pageX) + "px")
+          .style("top", (event.pageY - 28) + "px");
+      })
 
-      .on("mouseout", function() {
+      .on("mouseout", function () {
         tooltip.transition()
           .duration(500)
           .style("opacity", 0);
@@ -155,7 +155,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
       const source = serializer.serializeToString(svgElement);
 
       // Add name spaces.
-      const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+      const svgBlob = new Blob([source], {type: 'image/svg+xml;charset=utf-8'});
       const svgUrl = URL.createObjectURL(svgBlob);
       const downloadLink = document.createElement('a');
       downloadLink.href = svgUrl;

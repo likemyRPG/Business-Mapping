@@ -4,46 +4,68 @@
   </div>
 
   <!-- Adjust the button container's positioning to be dynamic with the sidebar state -->
-  <div class="absolute bottom-0 z-20 p-4 space-y-2"
-       [ngClass]="{'right-72': sidebarExpanded, 'right-0': !sidebarExpanded}">
-    <button (click)="zoomIn()" class="flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
-      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8l7 7 7-7"></path></svg>
+  <div [ngClass]="{'right-72': sidebarExpanded, 'right-0': !sidebarExpanded}"
+       class="absolute bottom-0 z-20 p-4 space-y-2">
+    <button (click)="zoomIn()"
+            class="flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+           xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 8l7 7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
       Zoom In
     </button>
-    <button (click)="zoomOut()" class="flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
-      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path></svg>
+    <button (click)="zoomOut()"
+            class="flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+           xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 12H5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
       Zoom Out
     </button>
-    <button (click)="resetZoom()" class="flex items-center justify-center bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded shadow">
-      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <button (click)="resetZoom()"
+            class="flex items-center justify-center bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded shadow">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+           xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="2"></path>
+      </svg>
       Reset Zoom
     </button>
   </div>
 
   <!-- Sidebar -->
-  <div class='absolute top-0 right-0 w-72 h-full bg-gray-800 text-white z-10 transition-all ease-in-out duration-300 transform'
-       [ngClass]="{'-translate-x-full opacity-0': !sidebarExpanded, 'translate-x-0 opacity-100': sidebarExpanded}">
-    <button class="p-4 w-full text-left text-gray-300 hover:text-white flex items-center" (click)="toggleSidebar()">
+  <div
+    [ngClass]="{'-translate-x-full opacity-0': !sidebarExpanded, 'translate-x-0 opacity-100': sidebarExpanded}"
+    class='absolute top-0 right-0 w-72 h-full bg-gray-800 text-white z-10 transition-all ease-in-out duration-300 transform'>
+    <button (click)="toggleSidebar()" class="p-4 w-full text-left text-gray-300 hover:text-white flex items-center">
       <!-- Icon for Toggle Button -->
-      <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+      <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+           xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
       Toggle Sidebar
     </button>
-    <h2 class="text-xl font-semibold p-4 border-b border-gray-700 text-uppercase"> {{selectedNode?.type || ''}} Details</h2>
+    <h2 class="text-xl font-semibold p-4 border-b border-gray-700 text-uppercase"> {{ selectedNode?.type || '' }}
+      Details</h2>
     <div class="p-4 overflow-auto">
-      <p *ngIf="selectedNode"><strong>Name:</strong> {{selectedNode.name}}</p>
+      <p *ngIf="selectedNode"><strong>Name:</strong> {{ selectedNode.name }}</p>
 
       <!-- Only display revenue if the node is a Customer -->
-      <p *ngIf="isCustomer(selectedNode)"><strong>Revenue:</strong> ${{selectedNode.revenue  | number}}</p>
+      <p *ngIf="isCustomer(selectedNode)"><strong>Revenue:</strong> ${{ selectedNode.revenue  | number }}</p>
 
       <!-- Assuming Sector has a revenue, but you might skip or adjust this if not applicable -->
-      <p *ngIf="isSector(selectedNode)"><strong>Sector Revenue:</strong> ${{selectedNode.revenue | number}}</p>
+      <p *ngIf="isSector(selectedNode)"><strong>Sector Revenue:</strong> ${{ selectedNode.revenue | number }}</p>
 
-      <p *ngIf="isCustomer(selectedNode)"><strong>Industry:</strong> {{selectedNode.industry}}</p>
-      <p *ngIf="isCustomer(selectedNode)"><strong>Location:</strong> {{selectedNode.location}}</p>
+      <p *ngIf="isCustomer(selectedNode)"><strong>Industry:</strong> {{ selectedNode.industry }}</p>
+      <p *ngIf="isCustomer(selectedNode)"><strong>Location:</strong> {{ selectedNode.location }}</p>
     </div>
 
   </div>
-  <button (click)="toggleSidebar()" class="bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-full p-2 fixed top-1/2 right-0 transform translate-x-full z-20"  [ngClass]="{'translate-x-full': sidebarExpanded, 'translate-x-0': !sidebarExpanded}">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+  <button (click)="toggleSidebar()"
+          [ngClass]="{'translate-x-full': sidebarExpanded, 'translate-x-0': !sidebarExpanded}"
+          class="bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-full p-2 fixed top-1/2 right-0 transform translate-x-full z-20">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+    </svg>
   </button>
 </div>

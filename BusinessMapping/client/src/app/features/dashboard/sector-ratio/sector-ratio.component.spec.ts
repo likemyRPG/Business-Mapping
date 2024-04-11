@@ -10,7 +10,7 @@ describe('SectorRatioComponent', () => {
     await TestBed.configureTestingModule({
       imports: [SectorRatioComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(SectorRatioComponent);
     component = fixture.componentInstance;

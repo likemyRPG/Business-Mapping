@@ -15,7 +15,9 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
-    public ProjectController(ProjectService projectService) {this.projectService = projectService;}
+    public ProjectController(ProjectService projectService) {
+        this.projectService = projectService;
+    }
 
     @Operation(summary = "Get all Projects", description = "Retrieve a list of all projects", tags = {"projects"})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

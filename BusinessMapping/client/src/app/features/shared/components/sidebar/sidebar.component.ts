@@ -20,7 +20,8 @@ import {NavService} from "../../services/nav.service";
 export class SidebarComponent implements OnInit {
   navItems: NavItem[] = [];
 
-  constructor(private navService: NavService) {}
+  constructor(private navService: NavService) {
+  }
 
   ngOnInit(): void {
     this.navItems = this.navService.getNavItems();

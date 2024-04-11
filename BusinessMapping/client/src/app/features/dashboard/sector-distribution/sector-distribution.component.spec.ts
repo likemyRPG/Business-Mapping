@@ -10,7 +10,7 @@ describe('SectorDistributionComponent', () => {
     await TestBed.configureTestingModule({
       imports: [SectorDistributionComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(SectorDistributionComponent);
     component = fixture.componentInstance;

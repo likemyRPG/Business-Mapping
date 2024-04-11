@@ -18,7 +18,8 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit {
 
   @ViewChild('pieChartContainer') pieChartContainer!: ElementRef;
 
-  constructor() {}
+  constructor() {
+  }
 
   ngAfterViewInit(): void {
     this.createPieChart();
@@ -77,7 +78,7 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit {
     arc.append("text")
       .attr("transform", (d: any) => `translate(${label.centroid(d)})`)
       .attr("text-anchor", "middle") // Center the text
-      .each(function(d) {
+      .each(function (d) {
         const node = d3.select(this);
         // @ts-ignore
         const lines = [d.data.name, `(${d.data.count})`]; // Split name and count into two lines

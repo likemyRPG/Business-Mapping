@@ -6,7 +6,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class CustomerDto {
-//    private String uuid; // Keep for updates where UUID is provided
+    //    private String uuid; // Keep for updates where UUID is provided
     private String name;
     private String size;
     private String location;

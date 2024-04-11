@@ -13,6 +13,7 @@ body {
   height: 100vh; /* Full viewport height */
   width: 100%; /* Full viewport width */
 }
+
 .flex {
   position: relative; /* This ensures that the absolute positioning of the sidebar is relative to this container */
 }

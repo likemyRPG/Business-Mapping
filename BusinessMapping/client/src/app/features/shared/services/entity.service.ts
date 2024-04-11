@@ -8,7 +8,8 @@ import {Observable} from 'rxjs';
 export class EntityService {
   private baseUrl = 'http://localhost:8080/api'; // Replace with your actual backend URL
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
   // Example methods for CRUD operations
   getAllCustomers(): Observable<any> {

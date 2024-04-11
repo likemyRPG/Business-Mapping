@@ -15,7 +15,9 @@ public class SectorController {
 
     private final SectorService sectorService;
 
-    public SectorController(SectorService sectorService) {this.sectorService = sectorService;}
+    public SectorController(SectorService sectorService) {
+        this.sectorService = sectorService;
+    }
 
     @Operation(summary = "Get all Sectors", description = "Retrieve a list of all sectors", tags = {"sectors"})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

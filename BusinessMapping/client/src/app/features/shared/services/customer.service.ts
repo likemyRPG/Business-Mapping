@@ -11,7 +11,8 @@ import {CustomerSectorRelation} from "../models/CustomerSectorRelation";
 export class CustomerService {
   private apiUrl = 'http://localhost:8080/api'; // URL to web API
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   getAllCustomers(): Observable<Customer[]> {
     return this.http.get<Customer[]>(this.apiUrl + '/customers');

@@ -22,7 +22,8 @@ export class CustomersComponent {
   relationships: CustomerSectorRelation[] = [];
 
 
-  constructor(private customerService: CustomerService) {}
+  constructor(private customerService: CustomerService) {
+  }
 
   ngOnInit() {
     this.customerService.getAllCustomers().subscribe((data: Customer[]) => {
