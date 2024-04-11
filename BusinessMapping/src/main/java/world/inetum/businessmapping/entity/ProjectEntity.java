@@ -6,6 +6,8 @@ import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 
+import java.time.LocalDate;
+
 @Data
 @Node("Project")
 @NoArgsConstructor
@@ -26,10 +28,10 @@ public class ProjectEntity {
     private String status;
 
     @Property("startDate")
-    private String startDate;
+    private LocalDate startDate;
 
     @Property("endDate")
-    private String endDate;
+    private LocalDate endDate;
 
     @Property("scope")
     private String scope;
