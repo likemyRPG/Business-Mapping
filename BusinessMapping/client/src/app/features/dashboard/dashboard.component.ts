@@ -34,7 +34,7 @@ export class DashboardComponent {
   relationships: CustomerSectorRelation[] = [];
   cards = [
     { title: 'Customer Revenue Overview', isLarge: true },
-    { title: 'Sector Ratio By Customers', isLarge: false },
+    { title: 'Amount of Customers Per Sector', isLarge: false },
   ];
 
   constructor(private customerService: CustomerService) {}

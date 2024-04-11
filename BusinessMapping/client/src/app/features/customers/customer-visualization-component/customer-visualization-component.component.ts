@@ -13,7 +13,7 @@ import {Customer} from "../../shared/models/Customer";
 import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
 import {Sector} from "../../shared/models/Sector";
 import * as d3 from 'd3';
-import {NgClass, NgIf} from "@angular/common";
+import {DecimalPipe, NgClass, NgIf} from "@angular/common";
 import {SimulationNodeDatum} from "d3";
 
 @Component({
@@ -21,7 +21,8 @@ import {SimulationNodeDatum} from "d3";
   standalone: true,
   imports: [
     NgIf,
-    NgClass
+    NgClass,
+    DecimalPipe
   ],
   templateUrl: './customer-visualization-component.component.html',
   styleUrl: './customer-visualization-component.component.css'
@@ -172,6 +173,21 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       ...this.sectors.map(sector => ({ ...sector, type: 'sector', id: sector.uuid, revenue: sectorRevenues[sector.uuid], visible: true}))
     ];
 
+    // Transform the relationships data to match D3's expected format
+    const links = this.relationships.map(r => ({
+      source: r.customerId,
+      target: r.sectorId
+    }));
+
+    // Draw links (Arrows)
+    const link = svg.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(links)
+      .enter().append("line")
+      .attr("stroke-width", 1)
+      .style("stroke", "#999");
+
     const node = svg.selectAll(".node")
       .data(combinedNodes)
       .enter().append("g")
@@ -243,12 +259,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       updateLinkVisibility();
     };
 
-    // Transform the relationships data to match D3's expected format
-    const links = this.relationships.map(r => ({
-      source: r.customerId,
-      target: r.sectorId
-    }));
-
     // Create a simulation for positioning, if necessary
     // @ts-ignore
     this.simulation = d3.forceSimulation(combinedNodes)
@@ -261,15 +271,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         return 'revenue' in d ? customerRadiusScale(d.revenue) : sectorRadiusScale(sectorRevenues[d.uuid]);
       }
       ).strength(0.2));
-
-    // Draw links (Arrows)
-    const link = svg.append("g")
-      .attr("class", "links")
-      .selectAll("line")
-      .data(links)
-      .enter().append("line")
-      .attr("stroke-width", 1)
-      .style("stroke", "#999");
 
     // @ts-ignore
     this.simulation.on("tick", () => {
@@ -385,3 +386,4 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     return node?.type === 'sector';
   }
 }
+

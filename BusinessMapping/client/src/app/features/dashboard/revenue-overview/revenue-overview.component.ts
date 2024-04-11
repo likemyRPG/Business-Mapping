@@ -9,17 +9,31 @@ import {
 } from '@angular/core';
 import * as d3 from 'd3';
 import {Customer} from "../../shared/models/Customer";
+import {FormsModule} from "@angular/forms";
+import {NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-revenue-overview',
   standalone: true,
   styleUrls: ['./revenue-overview.component.css'],
+  imports: [
+    FormsModule,
+    NgIf
+  ],
   templateUrl: './revenue-overview.component.html'
 })
 export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
 
   @ViewChild('chart') chartContainer: ElementRef | undefined;
   @Input() customers: Customer[] | undefined;
+
+  showDropdown = false;
+
+  selectedFileType = 'pdf';
+
+  toggleDropdown() {
+    this.showDropdown = !this.showDropdown;
+  }
 
   constructor() {
     console.log('RevenueOverviewComponent');
@@ -127,7 +141,8 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
         .duration(200)
         .style("opacity", .9);
       // @ts-ignore
-        tooltip.html(`Customer: ${d.name} <br> Revenue: €${d.revenue ?? 0}`)
+        // Displat revenue as a number with commas
+        tooltip.html(`Customer: ${d.name} <br> Revenue: €${d.revenue.toLocaleString() || 0}`)
         .style("left", (event.pageX) + "px")
         .style("top", (event.pageY - 28) + "px");
     })
@@ -137,5 +152,25 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
           .duration(500)
           .style("opacity", 0);
       });
+  }
+
+
+  exportGraph(): void {
+    // Serialize the SVG element
+    const svgElement = this.chartContainer?.nativeElement.querySelector('svg');
+    if (svgElement) {
+      const serializer = new XMLSerializer();
+      const source = serializer.serializeToString(svgElement);
+
+      // Add name spaces.
+      const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = svgUrl;
+      downloadLink.download = 'graph.svg';  // Name of the file to be downloaded
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
   }
 }

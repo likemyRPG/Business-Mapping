@@ -13,7 +13,7 @@
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
           <app-revenue-overview [customers]="customers"></app-revenue-overview>
         </ng-container>
-        <ng-container *ngIf="card.title === 'Sector Ratio By Customers'">
+        <ng-container *ngIf="card.title === 'Amount of Customers Per Sector'">
           <app-sector-ratio [customers]="customers" [sectors]="sectors" [relationships]="relationships" ></app-sector-ratio>
         </ng-container>
         </div>
