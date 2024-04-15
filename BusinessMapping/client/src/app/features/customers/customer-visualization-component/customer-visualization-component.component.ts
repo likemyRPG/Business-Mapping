@@ -15,6 +15,8 @@ import {Sector} from "../../shared/models/Sector";
 import * as d3 from 'd3';
 import {SimulationNodeDatum} from 'd3';
 import {DecimalPipe, NgClass, NgIf} from "@angular/common";
+import {Project} from "../../shared/models/Project";
+import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelation";
 
 @Component({
   selector: 'app-customer-visualization-component',
@@ -30,8 +32,10 @@ import {DecimalPipe, NgClass, NgIf} from "@angular/common";
 export class CustomerVisualizationComponent implements OnChanges, AfterViewInit {
   @ViewChild('chart') chartContainer: ElementRef | undefined;
   @Input() customers: Customer[] | undefined;
-  @Input() relationships: CustomerSectorRelation[] | undefined;
+  @Input() customerSectorRelations: CustomerSectorRelation[] | undefined;
+  @Input() projectCustomerRelations: ProjectCustomerRelation[] | undefined;
   @Input() sectors: Sector[] | undefined;
+  @Input() projects: Project[] | undefined;
   selectedCustomer: Customer | null = null;
   selectedNode: Customer | Sector | null = null;
   selectedNodeType: string = ''; // Track the type of the selected node
@@ -76,7 +80,11 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   createChart(): void {
-    if (!this.customers || !this.sectors || !this.chartContainer || !this.relationships) return;
+    if (!this.customers || !this.sectors || !this.chartContainer || !this.customerSectorRelations || !this.projects || !this.projectCustomerRelations) {
+      return;
+    }
+
+    console.log(this.projectCustomerRelations)
 
     const element = this.chartContainer.nativeElement;
     const width = element.offsetWidth;
@@ -85,7 +93,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Define two color scales for customers and sectors
     const customerColor = d3.scaleOrdinal().range(["#3182bd"]); // Example blue color for customers
     const sectorColor = d3.scaleOrdinal().range(["#31a354"]); // Example green color for sectors
-
+    const projectColor = d3.scaleOrdinal().range(["#756bb1"]); // Example purple color for projects
 
     d3.select(element).selectAll('svg').remove(); // Clear the existing chart
 
@@ -110,7 +118,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .style("pointer-events", "all");
 
     // Calculate combined revenue for each sector
-    const sectorRevenues = this.relationships.reduce((acc, cur) => {
+    const sectorRevenues = this.customerSectorRelations.reduce((acc, cur) => {
       // @ts-ignore
       const customer = this.customers.find(c => c.uuid === cur.customerId);
       if (customer) {
@@ -146,16 +154,21 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         ...sector,
         type: 'sector',
         id: sector.uuid,
+        // @ts-ignore
         revenue: sectorRevenues[sector.uuid],
         visible: true
-      }))
+      })),
+      // @ts-ignore
+      ...this.projects.map(project => ({...project, type: 'project', id: project.uuid, visible: false})),
     ];
 
-    // Transform the relationships data to match D3's expected format
-    const links = this.relationships.map(r => ({
-      source: r.customerId,
-      target: r.sectorId
-    }));
+    console.log(this.projects)
+
+    // Transform the customerSectorRelations data to match D3's expected format
+    const links = [
+      ...this.customerSectorRelations.map(r => ({source: r.customerId, target: r.sectorId})),
+      ...this.projectCustomerRelations.map(r => ({source: r.customerId, target: r.projectId}))
+    ];
 
     // Draw links (Arrows)
     const link = svg.append("g")
@@ -220,9 +233,17 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         event.stopPropagation(); // Prevent the click from triggering zoom behavior
       });
 
+    // @ts-ignore
+    node.filter(d => d.type === 'customer')
+      .on('click', (event, d) => {
+        console.log("Clicked customer", d.id);
+        toggleProjectsVisibility(d.id);
+        event.stopPropagation(); // Prevent the click from triggering zoom behavior
+      });
+
     const toggleCustomersVisibility = (sectorId: string) => {
       // @ts-ignore
-      const relatedCustomers = this.relationships.filter(r => r.sectorId === sectorId).map(r => r.customerId);
+      const relatedCustomers = this.customerSectorRelations.filter(r => r.sectorId === sectorId).map(r => r.customerId);
       combinedNodes.forEach(node => {
         // @ts-ignore
         if (node.type === 'customer' && relatedCustomers.includes(node.id)) {
@@ -236,6 +257,27 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
       updateLinkVisibility();
     };
+
+    const toggleProjectsVisibility = (customerId: string) => {
+      console.log(this.projectCustomerRelations)
+      console.log(customerId)
+      // @ts-ignore
+      const relatedProjects = this.projectCustomerRelations.filter(r => r.customerId === customerId).map(r => r.projectId);
+      console.log(relatedProjects)
+      combinedNodes.forEach(node => {
+        // @ts-ignore
+        if (node.type === 'project' && relatedProjects.includes(node.id)) {
+          console.log(node)
+          // @ts-ignore
+          node.visible = !node.visible; // Toggle visibility
+        }
+      });
+      // Update the node display based on the new visibility states
+      svg.selectAll(".node")
+        .style("display", d => (d as any).visible ? "block" : "none");
+
+      updateLinkVisibility();
+    }
 
     // Create a simulation for positioning, if necessary
     // @ts-ignore
