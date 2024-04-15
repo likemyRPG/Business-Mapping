@@ -14,7 +14,7 @@ import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation
 import {Sector} from "../../shared/models/Sector";
 import * as d3 from 'd3';
 import {SimulationNodeDatum} from 'd3';
-import {DecimalPipe, NgClass, NgIf} from "@angular/common";
+import {DatePipe, DecimalPipe, NgClass, NgIf} from "@angular/common";
 import {Project} from "../../shared/models/Project";
 import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelation";
 
@@ -24,7 +24,8 @@ import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelati
   imports: [
     NgIf,
     NgClass,
-    DecimalPipe
+    DecimalPipe,
+    DatePipe
   ],
   templateUrl: './customer-visualization-component.component.html',
   styleUrl: './customer-visualization-component.component.css'
@@ -37,7 +38,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   @Input() sectors: Sector[] | undefined;
   @Input() projects: Project[] | undefined;
   selectedCustomer: Customer | null = null;
-  selectedNode: Customer | Sector | null = null;
+  selectedNode: Customer | Sector | Project | null = null;
   selectedNodeType: string = ''; // Track the type of the selected node
   protected sidebarExpanded: boolean = true;
   private simulation: d3.Simulation<d3.SimulationNodeDatum, undefined> | undefined;
@@ -430,6 +431,11 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     svgElement.transition().duration(750)
       .call(this.zoomBehavior.transform, newTransform);
+  }
+
+  isProject(node: any): node is Project {
+    console.log(node?.type)
+    return node && node.type === 'project';
   }
 }
 

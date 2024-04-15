@@ -48,18 +48,29 @@
     <h2 class="text-xl font-semibold p-4 border-b border-gray-700 text-uppercase"> {{ selectedNode?.type || '' }}
       Details</h2>
     <div class="p-4 overflow-auto">
+      <p>Type Debug: {{ selectedNode?.type }}</p> <!-- Remove after debugging -->
       <p *ngIf="selectedNode"><strong>Name:</strong> {{ selectedNode.name }}</p>
 
-      <!-- Only display revenue if the node is a Customer -->
       <p *ngIf="isCustomer(selectedNode)"><strong>Revenue:</strong> ${{ selectedNode.revenue  | number }}</p>
 
-      <!-- Assuming Sector has a revenue, but you might skip or adjust this if not applicable -->
       <p *ngIf="isSector(selectedNode)"><strong>Sector Revenue:</strong> ${{ selectedNode.revenue | number }}</p>
 
       <p *ngIf="isCustomer(selectedNode)"><strong>Industry:</strong> {{ selectedNode.industry }}</p>
       <p *ngIf="isCustomer(selectedNode)"><strong>Location:</strong> {{ selectedNode.location }}</p>
-    </div>
 
+      <div *ngIf="isProject(selectedNode)">
+        <p><strong>Success:</strong> {{ selectedNode.success ? 'Yes' : 'No' }}</p>
+        <p><strong>Year:</strong> {{ selectedNode.year }}</p>
+        <p><strong>Status:</strong> {{ selectedNode.status }}</p>
+        <p><strong>Start Date:</strong> {{ selectedNode.startDate | date }}</p>
+        <p><strong>End Date:</strong> {{ selectedNode.endDate | date }}</p>
+        <p><strong>On Time:</strong> {{ selectedNode.onTime ? 'Yes' : 'No' }}</p>
+        <p><strong>Scope:</strong> {{ selectedNode.scope }}</p>
+        <p><strong>Budget:</strong> ${{ selectedNode.budget | number }}</p>
+        <p><strong>Actual Cost:</strong> ${{ selectedNode.actualCost | number }}</p>
+        <p><strong>Impact:</strong> {{ selectedNode.impact }}</p>
+      </div>
+    </div>
   </div>
   <button (click)="toggleSidebar()"
           [ngClass]="{'translate-x-full': sidebarExpanded, 'translate-x-0': !sidebarExpanded}"
