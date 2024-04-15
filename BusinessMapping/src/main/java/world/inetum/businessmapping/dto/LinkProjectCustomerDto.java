@@ -11,7 +11,7 @@ public class LinkProjectCustomerDto {
     private String customerId;
     private String projectId;
 
-    public LinkProjectCustomerDto(String projectId, String customerId) {
+    public LinkProjectCustomerDto(String customerId, String projectId) {
         this.customerId = customerId;
         this.projectId = projectId;
     }
@@ -20,7 +20,7 @@ public class LinkProjectCustomerDto {
     public String toString() {
         return "Link{" +
                 "customerId='" + customerId + '\'' +
-                ", sectorId='" + projectId + '\'' +
+                ", projectId='" + projectId + '\'' +
                 '}';
     }
 }

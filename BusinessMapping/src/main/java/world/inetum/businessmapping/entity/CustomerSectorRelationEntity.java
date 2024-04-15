@@ -14,7 +14,7 @@ public class CustomerSectorRelationEntity {
     @GeneratedValue
     private Long id;
 
-    @Relationship(type = "OPERATES_IN", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "OPERATES_IN", direction = Relationship.Direction.INCOMING)
     private SectorEntity sector;
 
     private CustomerEntity customer;

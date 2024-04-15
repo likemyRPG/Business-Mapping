@@ -26,4 +26,11 @@ export class CustomerService {
     return this.http.get<CustomerSectorRelation[]>(this.apiUrl + '/graphs/customers-sectors');
   }
 
+  getAllProjects() {
+    return this.http.get(this.apiUrl + '/projects');
+  }
+
+  getAllProjectCustomerRelations() {
+    return this.http.get(this.apiUrl + '/graphs/customers-projects');
+  }
 }
