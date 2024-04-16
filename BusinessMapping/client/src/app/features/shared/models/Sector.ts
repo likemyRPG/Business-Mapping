@@ -3,5 +3,5 @@ export interface Sector {
   id: string;
   name: string;
   revenue: number; // Assume sectors also have a revenue property for total sector revenue
-  type: 'Sector';
+  type: 'sector';
 }

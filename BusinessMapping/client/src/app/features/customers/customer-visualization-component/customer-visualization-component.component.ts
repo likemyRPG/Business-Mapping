@@ -293,8 +293,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         }
       ).strength(0.2));
 
-    // @ts-ignore
-    this.simulation.on("tick", () => {
+
+    this.simulation!.on("tick", () => {
       link
         .attr("x1", (d: any) => (d.source as SimulationNodeDatum).x ?? 0)
         .attr("y1", (d: any) => (d.source as SimulationNodeDatum).y ?? 0)

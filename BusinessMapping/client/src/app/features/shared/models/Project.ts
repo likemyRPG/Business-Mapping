@@ -11,5 +11,5 @@ export interface Project {
   onTime: boolean;
   actualCost: number;
   impact: string;
-  type: 'Project';
+  type: 'project';
 }
