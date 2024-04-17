@@ -85,8 +85,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       return;
     }
 
-    console.log(this.projectCustomerRelations)
-
     const element = this.chartContainer.nativeElement;
     const width = element.offsetWidth;
     const height = window.innerHeight;
@@ -171,8 +169,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       ...this.projects.map(project => ({...project, type: 'project', id: project.uuid, visible: false})),
     ];
 
-    console.log(this.projects)
-
     // Transform the customerSectorRelations data to match D3's expected format
     const links = [
       ...this.customerSectorRelations.map(r => ({source: r.customerId, target: r.sectorId})),
@@ -246,7 +242,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // @ts-ignore
     node.filter(d => d.type === 'customer')
       .on('click', (event, d) => {
-        console.log("Clicked customer", d.id);
         toggleProjectsVisibility(d.id);
         event.stopPropagation(); // Prevent the click from triggering zoom behavior
       });
@@ -269,15 +264,11 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     };
 
     const toggleProjectsVisibility = (customerId: string) => {
-      console.log(this.projectCustomerRelations)
-      console.log(customerId)
       // @ts-ignore
       const relatedProjects = this.projectCustomerRelations.filter(r => r.customerId === customerId).map(r => r.projectId);
-      console.log(relatedProjects)
       combinedNodes.forEach(node => {
         // @ts-ignore
         if (node.type === 'project' && relatedProjects.includes(node.id)) {
-          console.log(node)
           // @ts-ignore
           node.visible = !node.visible; // Toggle visibility
         }
@@ -450,7 +441,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   isProject(node: any): node is Project {
-    console.log(node?.type)
     return node && node.type === 'project';
   }
 }
