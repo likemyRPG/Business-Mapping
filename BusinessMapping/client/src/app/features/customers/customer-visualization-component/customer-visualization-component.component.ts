@@ -147,6 +147,11 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .domain([0, d3.max(Object.values(sectorRevenues))])
       .range([30, 50]); // Adjust min and max radius as needed
 
+    const projectRadiusScale = d3.scaleSqrt()
+      // @ts-ignore
+      .domain([0, d3.max(this.projects, d => +d.budget)])
+      .range([10, 30]); // Adjust min and max radius as needed
+
     // @ts-ignore
     const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
       ...this.customers.map(customer => ({...customer, type: 'customer', id: customer.uuid, visible: false})),
@@ -286,13 +291,20 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .force("link", d3.forceLink(links).id(d => (d as any).id).distance(100).strength(.1))
       .force("charge", d3.forceManyBody().strength(-50).distanceMax(150).distanceMin(20))
       .force("center", d3.forceCenter(width / 2, height / 2))
-
-      .force("collide", d3.forceCollide(d => {
+      .force("collide", d3.forceCollide().radius(d => {
+        // @ts-ignore
+        // return 'revenue' in d ? customerRadiusScale((d as any).revenue) + 5 : sectorRadiusScale(sectorRevenues[d.uuid]) + 5;
+        if ('revenue' in d) {
+          return customerRadiusScale((d as any).revenue) + 5;
+        } else if ((d as any).type === 'sector') {
           // @ts-ignore
-          return 'revenue' in d ? customerRadiusScale(d.revenue) : sectorRadiusScale(sectorRevenues[d.uuid]);
+          return sectorRadiusScale(sectorRevenues[d.uuid]) + 5;
+        } else if ((d as any).type === 'project') {
+          return projectRadiusScale((d as any).budget) + 5;
+        } else {
+          return 10;
         }
-      ).strength(0.2));
-
+      }));
 
     this.simulation!.on("tick", () => {
       link
