@@ -85,8 +85,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       return;
     }
 
-    console.log(this.projectCustomerRelations)
-
     const element = this.chartContainer.nativeElement;
     const width = element.offsetWidth;
     const height = window.innerHeight;
@@ -94,9 +92,37 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Define two color scales for customers and sectors
     const customerColor = d3.scaleOrdinal().range(["#3182bd"]); // Example blue color for customers
     const sectorColor = d3.scaleOrdinal().range(["#31a354"]); // Example green color for sectors
-    const projectColor = d3.scaleOrdinal().range(["#756bb1"]); // Example purple color for projects
+    // const projectColor = d3.scaleOrdinal().range(["#756bb1"]); // Example purple color for projects
 
     d3.select(element).selectAll('svg').remove(); // Clear the existing chart
+
+    function splitLongWords(word: string, maxLength: number) {
+      // Truncate words that are too long and add ellipsis
+      if (word.length > maxLength) {
+        return word.substring(0, maxLength - 3) + '...';
+      }
+      return word;
+    }
+
+    function wrapText(text: string, width: number) {
+      // Split text into words
+      let words = text.split(/\s+/).map(word => splitLongWords(word, 10)); // Assume 10 as max word length before truncating
+      let lines = [];
+      let currentLine = words[0];
+
+      for (let i = 1; i < words.length; i++) {
+        let word = words[i];
+        // Check if adding the next word would exceed the length limit
+        if ((currentLine.length + word.length + 1) > width) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine += ' ' + word;
+        }
+      }
+      lines.push(currentLine); // Push the last line
+      return lines;
+    }
 
     this.zoomBehavior = d3.zoom()
       .scaleExtent([0.1, 10]) // Optional: Restrict zoom scale for better control
@@ -104,6 +130,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         svg.attr("transform", event.transform); // Apply transformation
         svg.selectAll("text").style("display", function() {
           return event.transform.k > .3 ? "block" : "none";
+        });
+        svg.selectAll("text").style("font-size", function() {
+          return Math.max(12 / event.transform.k, 9) + "px";  // Adjust font size inversely with zoom
         });
       });
 
@@ -171,8 +200,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       ...this.projects.map(project => ({...project, type: 'project', id: project.uuid, visible: false})),
     ];
 
-    console.log(this.projects)
-
     // Transform the customerSectorRelations data to match D3's expected format
     const links = [
       ...this.customerSectorRelations.map(r => ({source: r.customerId, target: r.sectorId})),
@@ -229,12 +256,22 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     // Append text to each group
     node.append("text")
+      .each(function(d) {
+        let text = d3.select(this),
+          lines = wrapText(d.name, 15);  // Assume max 15 characters per line
+        lines.forEach((line, i) => {
+          text.append("tspan")
+            .attr("x", 0)
+            .attr("y", (i - lines.length / 2) + "em")
+            .attr("dy", `${1.1}em`)  // Line height
+            .text(line);
+        });
+      })
       .attr("dy", ".35em")
       .attr("text-anchor", "middle")
       .style("user-select", "none") // Prevent text selection
       .style("pointer-events", "none") // Ignore pointer events
       .style("font-size", "12px")
-      .text(d => d.name);
 
     // @ts-ignore
     node.filter(d => d.type === 'sector')
@@ -246,7 +283,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // @ts-ignore
     node.filter(d => d.type === 'customer')
       .on('click', (event, d) => {
-        console.log("Clicked customer", d.id);
         toggleProjectsVisibility(d.id);
         event.stopPropagation(); // Prevent the click from triggering zoom behavior
       });
@@ -269,15 +305,11 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     };
 
     const toggleProjectsVisibility = (customerId: string) => {
-      console.log(this.projectCustomerRelations)
-      console.log(customerId)
       // @ts-ignore
       const relatedProjects = this.projectCustomerRelations.filter(r => r.customerId === customerId).map(r => r.projectId);
-      console.log(relatedProjects)
       combinedNodes.forEach(node => {
         // @ts-ignore
         if (node.type === 'project' && relatedProjects.includes(node.id)) {
-          console.log(node)
           // @ts-ignore
           node.visible = !node.visible; // Toggle visibility
         }
@@ -450,7 +482,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   isProject(node: any): node is Project {
-    console.log(node?.type)
     return node && node.type === 'project';
   }
 }
