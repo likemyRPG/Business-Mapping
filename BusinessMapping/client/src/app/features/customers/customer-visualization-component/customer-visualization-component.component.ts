@@ -102,6 +102,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .scaleExtent([0.1, 10]) // Optional: Restrict zoom scale for better control
       .on("zoom", (event) => {
         svg.attr("transform", event.transform); // Apply transformation
+        svg.selectAll("text").style("display", function() {
+          return event.transform.k > .3 ? "block" : "none";
+        });
       });
 
     const svg = d3.select(element).append('svg')
@@ -230,6 +233,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .attr("text-anchor", "middle")
       .style("user-select", "none") // Prevent text selection
       .style("pointer-events", "none") // Ignore pointer events
+      .style("font-size", "12px")
       .text(d => d.name);
 
     // @ts-ignore
@@ -295,14 +299,14 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         // @ts-ignore
         // return 'revenue' in d ? customerRadiusScale((d as any).revenue) + 5 : sectorRadiusScale(sectorRevenues[d.uuid]) + 5;
         if ('revenue' in d) {
-          return customerRadiusScale((d as any).revenue) + 5;
+          return customerRadiusScale((d as any).revenue) + 15;
         } else if ((d as any).type === 'sector') {
           // @ts-ignore
-          return sectorRadiusScale(sectorRevenues[d.uuid]) + 5;
+          return sectorRadiusScale(sectorRevenues[d.uuid]) + 15;
         } else if ((d as any).type === 'project') {
-          return projectRadiusScale((d as any).budget) + 5;
+          return projectRadiusScale((d as any).budget) + 15;
         } else {
-          return 10;
+          return 20;
         }
       }));
 
