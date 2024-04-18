@@ -3,27 +3,28 @@
   <div class="max-w-6xl mx-auto">
     <div class="text-3xl font-bold text-gray-900 mb-5" i18n="@@siteDashboardHeader">Dashboard</div>
     <!-- Select Dropdown for Customer Selection - De Fault: All Customers -->
-    <select [(ngModel)]="selectedCustomer"
-            (change)="onChangeCustomer()"
+    <select (change)="onChangeCustomer()"
+            [(ngModel)]="selectedCustomer"
+            aria-label="Select Customer"
             class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mb-6"
-            i18n="@@siteDashboardCustomerSelection"
-            aria-label="Select Customer">
+            i18n="@@siteDashboardCustomerSelection">
       <option value="all">All Customers</option>
       <option *ngFor="let customer of customers"
               [value]="customer.uuid">
-        {{customer.name}}
+        {{ customer.name }}
       </option>
     </select>
     <!-- Cards Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Dynamic Card Generation -->
-      <div *ngFor="let card of cards" [ngClass]="{'lg:col-span-2': card.isLarge, 'lg:col-span-1': !card.isLarge}" class="bg-white shadow-lg rounded-lg p-5">
+      <div *ngFor="let card of cards" [ngClass]="{'lg:col-span-2': card.isLarge, 'lg:col-span-1': !card.isLarge}"
+           class="bg-white shadow-lg rounded-lg p-5">
         <div class="mb-2 font-bold text-xl">{{ card.title }}</div>
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
           <app-revenue-overview [customers]="customers"></app-revenue-overview>
         </ng-container>
         <ng-container *ngIf="card.title === 'Project Success Rate'">
-          <app-project-success-rate [projects]="projects" [customers]="customers"
+          <app-project-success-rate [customers]="customers" [projects]="projects"
                                     [relationships]="ProjectCustomerRelations"></app-project-success-rate>
         </ng-container>
         <ng-container *ngIf="card.title === 'Amount of Customers Per Sector'">

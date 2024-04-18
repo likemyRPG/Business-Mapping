@@ -92,7 +92,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Define two color scales for customers and sectors
     const customerColor = d3.scaleOrdinal().range(["#3182bd"]); // Example blue color for customers
     const sectorColor = d3.scaleOrdinal().range(["#31a354"]); // Example green color for sectors
-    const projectColor = d3.scaleOrdinal().range(["#756bb1"]); // Example purple color for projects
 
     d3.select(element).selectAll('svg').remove(); // Clear the existing chart
 
@@ -100,7 +99,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .scaleExtent([0.1, 10]) // Optional: Restrict zoom scale for better control
       .on("zoom", (event) => {
         svg.attr("transform", event.transform); // Apply transformation
-        svg.selectAll("text").style("display", function() {
+        svg.selectAll("text").style("display", function () {
           return event.transform.k > .3 ? "block" : "none";
         });
       });
@@ -397,6 +396,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     return node?.type === 'sector';
   }
 
+  isProject(node: any): node is Project {
+    return node && node.type === 'project';
+  }
+
   private dragStarted(event: d3.D3DragEvent<any, any, any>, d: any) {
     if (!event.active)
       // @ts-ignore
@@ -438,10 +441,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     svgElement.transition().duration(750)
       .call(this.zoomBehavior.transform, newTransform);
-  }
-
-  isProject(node: any): node is Project {
-    return node && node.type === 'project';
   }
 }
 

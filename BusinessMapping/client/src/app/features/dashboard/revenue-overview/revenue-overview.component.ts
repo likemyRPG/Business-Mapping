@@ -24,7 +24,8 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
 
   showDropdown = false;
 
-  constructor(private sharedService: SharedService) { }
+  constructor(private sharedService: SharedService) {
+  }
 
   ngOnInit() {
     this.sharedService.currentCustomer.subscribe(customer => {

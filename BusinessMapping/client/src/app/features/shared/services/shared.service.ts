@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject} from 'rxjs';
 import {Customer} from "../models/Customer";
 
 @Injectable({
@@ -9,7 +9,8 @@ export class SharedService {
   private customerSource = new BehaviorSubject<string>('all');
   currentCustomer = this.customerSource.asObservable();
 
-  constructor() { }
+  constructor() {
+  }
 
   changeCustomer(customer: "all" | Customer | null) {
     // @ts-ignore

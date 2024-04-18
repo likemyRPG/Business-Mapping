@@ -23,9 +23,10 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   @Input() projects!: Project[];
   selectedCustomer: 'all' | Customer | null = null;
 
-  @ViewChild('projectSuccessRateContainer', { static: true }) projectSuccessRateContainer!: ElementRef;
+  @ViewChild('projectSuccessRateContainer', {static: true}) projectSuccessRateContainer!: ElementRef;
 
-  constructor(private sharedService: SharedService) {}
+  constructor(private sharedService: SharedService) {
+  }
 
   ngOnInit() {
     this.sharedService.currentCustomer.subscribe(customer => {
@@ -65,7 +66,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   }
 
   protected createProjectSuccessRate(): void {
-    if(!this.projectSuccessRateContainer) {
+    if (!this.projectSuccessRateContainer) {
       return;
     }
     const element = this.projectSuccessRateContainer.nativeElement;
@@ -155,8 +156,6 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   private processData(selectedCustomer: "all" | Customer | null) {
     let filteredProjects = this.projects;
 
-    console.log('filteredProjects', filteredProjects)
-
     if (selectedCustomer && selectedCustomer !== 'all') {
       // @ts-ignore
       const customerProjects = this.relationships.filter(r => r.customerId === selectedCustomer).map(r => r.projectId);
@@ -174,8 +173,8 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     }
 
     return [
-      { type: 'Success', value: successRate },
-      { type: 'Failed', value: failureRate }
+      {type: 'Success', value: successRate},
+      {type: 'Failed', value: failureRate}
     ];
   }
 }
