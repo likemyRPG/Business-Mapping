@@ -13,6 +13,8 @@ import {Sector} from "../shared/models/Sector";
 import {CustomerSectorRelation} from "../shared/models/CustomerSectorRelation";
 import {Project} from "../shared/models/Project";
 import {ProjectCustomerRelation} from "../shared/models/ProjectCustomerRelation";
+import {FormsModule} from "@angular/forms";
+import {SharedService} from "../shared/services/shared.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -25,7 +27,8 @@ import {ProjectCustomerRelation} from "../shared/models/ProjectCustomerRelation"
     NgClass,
     NgIf,
     CustomerVisualizationComponent,
-    SectorRatioComponent
+    SectorRatioComponent,
+    FormsModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -37,12 +40,13 @@ export class DashboardComponent {
   CustomerSectorRelationships: CustomerSectorRelation[] = [];
   ProjectCustomerRelations: ProjectCustomerRelation[] = [];
   cards = [
-    // {title: 'Customer Revenue Overview', isLarge: true},
-    // {title: 'Amount of Customers Per Sector', isLarge: false},
+    {title: 'Customer Revenue Overview', isLarge: true},
+    {title: 'Amount of Customers Per Sector', isLarge: false},
     {title: 'Project Success Rate', isLarge: true},
   ];
+  selectedCustomer: 'all' | Customer | null = null;
 
-  constructor(private customerService: CustomerService) {
+  constructor(private customerService: CustomerService, private sharedService: SharedService) {
   }
 
   ngOnInit() {
@@ -66,5 +70,9 @@ export class DashboardComponent {
       console.log(data);
       this.ProjectCustomerRelations = data as ProjectCustomerRelation[];
     });
+  }
+
+  onChangeCustomer() {
+    this.sharedService.changeCustomer(this.selectedCustomer);
   }
 }

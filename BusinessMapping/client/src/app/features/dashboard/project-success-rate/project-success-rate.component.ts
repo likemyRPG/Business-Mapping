@@ -1,12 +1,13 @@
 // @ts-nocheck
 
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {Project} from "../../shared/models/Project";
 import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelation";
 import {Customer} from "../../shared/models/Customer";
 import {FormsModule} from "@angular/forms";
 import {NgForOf} from "@angular/common";
 import * as d3 from 'd3';
+import {SharedService} from "../../shared/services/shared.service";
 
 @Component({
   selector: 'app-project-success-rate',
@@ -18,15 +19,29 @@ import * as d3 from 'd3';
   templateUrl: './project-success-rate.component.html',
   styleUrl: './project-success-rate.component.css'
 })
-export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit {
+export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, OnInit {
   @Input() customers!: Customer[];
   @Input() relationships!: ProjectCustomerRelation[];
   @Input() projects!: Project[];
 
   @ViewChild('projectSuccessRateContainer', { static: true }) projectSuccessRateContainer!: ElementRef;
-  selectedCustomer: any;
+  selectedCustomer: 'all' | Customer | null = null;
 
-  constructor() {
+  constructor(private sharedService: SharedService) {
+
+  }
+
+  ngOnInit() {
+    this.sharedService.currentCustomer.subscribe(customer => {
+      this.selectedCustomer = customer;
+      this.updateData(); // Method to update data based on selected customer
+    });
+  }
+
+  updateData() {
+    if (this.projects && this.customers && this.relationships && this.projectSuccessRateContainer) {
+      this.createProjectSuccessRate();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -41,6 +56,10 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit {
     if (this.projects && this.customers && this.relationships && this.projectSuccessRateContainer) {
       this.createProjectSuccessRate();
     }
+  }
+
+  onChangeCustomer(customer: string) {
+    this.sharedService.changeCustomer(customer);
   }
 
   protected createProjectSuccessRate(): void {
