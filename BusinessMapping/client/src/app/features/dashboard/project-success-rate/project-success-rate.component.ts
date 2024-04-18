@@ -155,22 +155,27 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   private processData(selectedCustomer: "all" | Customer | null) {
     let filteredProjects = this.projects;
 
+    console.log('filteredProjects', filteredProjects)
+
     if (selectedCustomer && selectedCustomer !== 'all') {
       // @ts-ignore
       const customerProjects = this.relationships.filter(r => r.customerId === selectedCustomer).map(r => r.projectId);
       filteredProjects = this.projects.filter(p => customerProjects.includes((p as any).uuid));
     }
 
-    const successCount = filteredProjects.filter(p => p.success).length;
+    const successCount = filteredProjects.filter(p => p.success && p.onTime && p.actualCost <= p.budget).length;
     const noSuccessCount = filteredProjects.length - successCount;
+
+    const successRate = ((successCount / filteredProjects.length) * 100).toFixed(2);
+    const failureRate = ((noSuccessCount / filteredProjects.length) * 100).toFixed(2);
 
     if (filteredProjects.length === 0) {
       return [];
     }
 
     return [
-      { type: 'Success', value: ((successCount / filteredProjects.length) * 100).toFixed(2) },
-      { type: 'Failed', value: ((noSuccessCount / filteredProjects.length) * 100).toFixed(2) }
+      { type: 'Success', value: successRate },
+      { type: 'Failed', value: failureRate }
     ];
   }
 }
