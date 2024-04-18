@@ -1,8 +1,9 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import * as d3 from 'd3';
 import {Customer} from "../../shared/models/Customer";
 import {FormsModule} from "@angular/forms";
 import {NgIf} from "@angular/common";
+import {SharedService} from "../../shared/services/shared.service";
 
 @Component({
   selector: 'app-revenue-overview',
@@ -14,17 +15,29 @@ import {NgIf} from "@angular/common";
   ],
   templateUrl: './revenue-overview.component.html'
 })
-export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
+export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnInit {
 
   @ViewChild('chart') chartContainer: ElementRef | undefined;
   @Input() customers: Customer[] | undefined;
 
+  selectedCustomer: 'all' | Customer | null = null;
+
   showDropdown = false;
 
-  selectedFileType = 'pdf';
+  constructor(private sharedService: SharedService) { }
 
-  constructor() {
-    console.log('RevenueOverviewComponent');
+  ngOnInit() {
+    this.sharedService.currentCustomer.subscribe(customer => {
+      // @ts-ignore
+      this.selectedCustomer = customer;
+      this.updateData(); // Method to update data based on selected customer
+    });
+  }
+
+  updateData() {
+    if (this.customers && this.chartContainer) {
+      this.createChart();
+    }
   }
 
   toggleDropdown() {
@@ -80,6 +93,8 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
     const y = d3.scaleLinear()
       .range([height, 0]);
 
+    d3.select(element).selectAll('svg').remove();
+
     const svg = d3.select(element).append('svg')
       .attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
@@ -88,7 +103,8 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
 
     const data = this.customers.map(customer => ({
       name: customer.name,
-      revenue: +customer.revenue
+      revenue: +customer.revenue,
+      id: customer.uuid
     }));
 
     x.domain(data.map(d => d.name));
@@ -96,6 +112,14 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
     const maxY = d3.max(data, d => +d.revenue);
 
     y.domain([0, maxY ?? 0]);
+
+    // Print the ids of the data
+    for (const customer of data) {
+      console.log(customer);
+      if (customer.id === this.selectedCustomer) {
+        console.log("Selected Customer: " + customer.id);
+      }
+    }
 
     svg.selectAll(".bar")
       .data(data)
@@ -105,9 +129,9 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
       .attr("width", x.bandwidth())
       .attr("y", d => y(d.revenue))
       .attr("height", d => height - y(d.revenue))
-      .attr("fill", "steelblue");
+      .attr("fill", d => (d as Customer).id === this.selectedCustomer ? 'red' : 'steelblue');  // Highlight selected customer
 
-    const labelFrequency = 2;
+    const labelFrequency = Math.ceil(data.length / 20);
 
     svg.append("g")
       .attr("transform", `translate(0,${height})`)
@@ -132,9 +156,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit {
         tooltip.transition()
           .duration(200)
           .style("opacity", .9);
-        // @ts-ignore
-        // Displat revenue as a number with commas
-        tooltip.html(`Customer: ${d.name} <br> Revenue: €${d.revenue.toLocaleString() || 0}`)
+        tooltip.html(`Customer: ${(d as Customer).name} <br> Revenue: €${(d as Customer).revenue.toLocaleString() || 0}`)
           .style("left", (event.pageX) + "px")
           .style("top", (event.pageY - 28) + "px");
       })
