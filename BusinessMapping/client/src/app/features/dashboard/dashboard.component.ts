@@ -14,6 +14,9 @@ import {Project} from "../shared/models/Project";
 import {ProjectCustomerRelation} from "../shared/models/ProjectCustomerRelation";
 import {FormsModule} from "@angular/forms";
 import {SharedService} from "../shared/services/shared.service";
+import {NgSelectModule} from "@ng-select/ng-select";
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -26,7 +29,8 @@ import {SharedService} from "../shared/services/shared.service";
     NgIf,
     CustomerVisualizationComponent,
     SectorRatioComponent,
-    FormsModule
+    FormsModule,
+    NgSelectModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -43,11 +47,20 @@ export class DashboardComponent {
     {title: 'Project Success Rate', isLarge: false},
   ];
   selectedCustomer: 'all' | Customer | null = null;
+  customerInput$ = new BehaviorSubject<string>('');
+  filteredCustomers$: Observable<any[]> | undefined;
 
   constructor(private customerService: CustomerService, private sharedService: SharedService) {
   }
 
   ngOnInit() {
+    this.filteredCustomers$ = this.customerInput$.pipe(
+      debounceTime(200),  // Wait for 200ms pause in events
+      distinctUntilChanged(),  // Ignore if next search term is same as previous
+      switchMap(term => this.searchCustomers(term))  // Switch to new search observable each time the term changes
+    );
+
+
     this.customerService.getAllCustomers().subscribe((data: Customer[]) => {
       this.customers = data;
     });
@@ -72,4 +85,12 @@ export class DashboardComponent {
   onChangeCustomer() {
     this.sharedService.changeCustomer(this.selectedCustomer);
   }
+
+  searchCustomers(term: string): Observable<any[]> {
+    if (term === '') {
+      return of(this.customers);  // Use 'of' to return an Observable
+    }
+    return of(this.customers.filter(customer => customer.name.toLowerCase().includes(term.toLowerCase())));
+  }
+
 }

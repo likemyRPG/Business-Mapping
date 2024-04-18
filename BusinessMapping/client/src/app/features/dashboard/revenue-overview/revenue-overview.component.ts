@@ -4,6 +4,7 @@ import {Customer} from "../../shared/models/Customer";
 import {FormsModule} from "@angular/forms";
 import {NgIf} from "@angular/common";
 import {SharedService} from "../../shared/services/shared.service";
+import {GraphExportService} from "../../shared/services/gaph-export.service";
 
 @Component({
   selector: 'app-revenue-overview',
@@ -22,9 +23,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
 
   selectedCustomer: 'all' | Customer | null = null;
 
-  showDropdown = false;
-
-  constructor(private sharedService: SharedService) {
+  constructor(private sharedService: SharedService, private exportService: GraphExportService) {
   }
 
   ngOnInit() {
@@ -39,10 +38,6 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
     if (this.customers && this.chartContainer) {
       this.createChart();
     }
-  }
-
-  toggleDropdown() {
-    this.showDropdown = !this.showDropdown;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -75,6 +70,14 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
       d3.select(this.chartContainer.nativeElement).selectAll('*').remove();
       // Recreate the chart with new dimensions
       this.createChart();
+    }
+  }
+
+  exportGraph(): void {
+    const svgElement = this.chartContainer?.nativeElement.querySelector('svg') as SVGElement;
+    if (svgElement) {
+      // @ts-ignore
+      this.exportService.exportGraph(svgElement, 'revenue-overview.svg');
     }
   }
 
@@ -159,25 +162,5 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
           .duration(500)
           .style("opacity", 0);
       });
-  }
-
-
-  exportGraph(): void {
-    // Serialize the SVG element
-    const svgElement = this.chartContainer?.nativeElement.querySelector('svg');
-    if (svgElement) {
-      const serializer = new XMLSerializer();
-      const source = serializer.serializeToString(svgElement);
-
-      // Add name spaces.
-      const svgBlob = new Blob([source], {type: 'image/svg+xml;charset=utf-8'});
-      const svgUrl = URL.createObjectURL(svgBlob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = svgUrl;
-      downloadLink.download = 'graph.svg';  // Name of the file to be downloaded
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    }
   }
 }

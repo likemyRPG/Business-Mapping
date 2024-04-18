@@ -7,16 +7,19 @@
     <!-- Select Dropdown for Customer Selection - Default: All Customers -->
     <div class="flex flex-col sm:flex-row items-center gap-4 mb-8">
       <label for="customerSelect" class="font-medium text-gray-900">Select a Customer:</label>
-      <select id="customerSelect" (change)="onChangeCustomer()"
-              [(ngModel)]="selectedCustomer"
-              aria-label="Select Customer"
-              class="bg-white border border-gray-300 text-gray-900 text-base rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-auto p-3 shadow-sm"
-              i18n="@@siteDashboardCustomerSelection">
-        <option value="all" selected>All Customers</option>
-        <option *ngFor="let customer of customers" [value]="customer.uuid">
-          {{ customer.name }}
-        </option>
-      </select>
+      <ng-select [items]="customers"
+                 bindLabel="name"
+                 bindValue="uuid"
+                 placeholder="All Customers"
+                 [(ngModel)]="selectedCustomer"
+                 (change)="onChangeCustomer()"
+                 [typeahead]="customerInput$"
+                 [clearable]="true"
+                 [searchable]="true"
+                 class="w-full sm:w-56"
+                  id="customerSelect">
+      >
+      </ng-select>
     </div>
 
     <!-- Cards Section -->

@@ -4,6 +4,7 @@ import {Sector} from '../../shared/models/Sector';
 import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
 import * as d3 from 'd3';
 import {SharedService} from "../../shared/services/shared.service";
+import {GraphExportService} from "../../shared/services/gaph-export.service";
 
 @Component({
   selector: 'app-sector-ratio',
@@ -21,7 +22,7 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
 
   selectedCustomer: 'all' | Customer | null = null;
 
-  constructor(private sharedService: SharedService) {
+  constructor(private sharedService: SharedService, private exportService: GraphExportService) {
   }
 
   ngOnInit() {
@@ -57,6 +58,14 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
   ngOnChanges(changes: SimpleChanges): void {
     if (this.pieChartContainer) {
       this.createPieChart();
+    }
+  }
+
+  exportGraph(): void {
+    const svgElement = this.pieChartContainer?.nativeElement.querySelector('svg') as SVGElement;
+    if (svgElement) {
+      // @ts-ignore
+      this.exportService.exportGraph(svgElement, 'revenue-overview.svg');
     }
   }
 

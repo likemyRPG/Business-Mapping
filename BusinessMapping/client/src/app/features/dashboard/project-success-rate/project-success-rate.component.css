@@ -4,3 +4,12 @@
   align-items: center;
   height: 100%;
 }
+
+.chart-container {
+  /* Example styling */
+  width: 100%;
+  max-width: 800px;
+  height: 400px;
+  margin: auto;
+  display: block;
+}

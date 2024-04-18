@@ -6,6 +6,7 @@ import {FormsModule} from "@angular/forms";
 import {NgForOf} from "@angular/common";
 import * as d3 from 'd3';
 import {SharedService} from "../../shared/services/shared.service";
+import {GraphExportService} from "../../shared/services/gaph-export.service";
 
 @Component({
   selector: 'app-project-success-rate',
@@ -25,7 +26,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
 
   @ViewChild('projectSuccessRateContainer', {static: true}) projectSuccessRateContainer!: ElementRef;
 
-  constructor(private sharedService: SharedService) {
+  constructor(private sharedService: SharedService, private exportService: GraphExportService) {
   }
 
   ngOnInit() {
@@ -62,6 +63,13 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   ngOnChanges(changes: SimpleChanges): void {
     if (this.projects && this.customers && this.relationships && this.projectSuccessRateContainer) {
       this.createProjectSuccessRate();
+    }
+  }
+
+  exportGraph(): void {
+    const svgElement = this.projectSuccessRateContainer.nativeElement.querySelector('svg') as SVGElement;
+    if (svgElement) {
+      this.exportService.exportGraph(svgElement, 'project-success-rate.svg');
     }
   }
 
