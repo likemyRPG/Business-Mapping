@@ -4,6 +4,10 @@ import {SidebarComponent} from "./features/shared/components/sidebar/sidebar.com
 import {SafeHtmlPipe} from './safe-html.pipe';
 import {LoadingComponent} from "./features/shared/components/loading/loading.component";
 import {NgIf} from "@angular/common";
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
+
+registerLocaleData(localeEs);
 
 @Component({
   selector: 'app-root',

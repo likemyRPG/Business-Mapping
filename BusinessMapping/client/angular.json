@@ -5,7 +5,10 @@
   "projects": {
     "client": {
       "i18n": {
-
+        "sourceLocale": "en-US",
+        "locales": {
+          "es": "src/locale/messages.es.xlf"
+        }
       },
       "projectType": "application",
       "schematics": {},
@@ -16,6 +19,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
+            "localize": [
+              "en-US",
+              "es"
+            ],
             "outputPath": "dist/client",
             "index": "src/index.html",
             "browser": "src/main.ts",
@@ -52,6 +59,11 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "es": {
+              "localize": [
+                "es"
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -67,6 +79,8 @@
             },
             "development": {
               "buildTarget": "client:build:development"
+            },"es": {
+              "buildTarget": "client:build:es"
             }
           },
           "defaultConfiguration": "development"
