@@ -113,14 +113,6 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
 
     y.domain([0, maxY ?? 0]);
 
-    // Print the ids of the data
-    for (const customer of data) {
-      console.log(customer);
-      if (customer.id === this.selectedCustomer) {
-        console.log("Selected Customer: " + customer.id);
-      }
-    }
-
     svg.selectAll(".bar")
       .data(data)
       .enter().append("rect")
@@ -129,7 +121,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
       .attr("width", x.bandwidth())
       .attr("y", d => y(d.revenue))
       .attr("height", d => height - y(d.revenue))
-      .attr("fill", d => (d as Customer).id === this.selectedCustomer ? 'red' : 'steelblue');  // Highlight selected customer
+      .attr("fill", d => (d as Customer).id === this.selectedCustomer ? '#ccff02' : 'steelblue');  // Highlight selected customer
 
     const labelFrequency = Math.ceil(data.length / 20);
 

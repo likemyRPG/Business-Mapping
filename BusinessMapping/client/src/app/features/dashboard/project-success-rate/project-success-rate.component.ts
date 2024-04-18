@@ -52,7 +52,6 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('Data changes detected:', changes);
     if (this.projects && this.customers && this.relationships && this.projectSuccessRateContainer) {
       this.createProjectSuccessRate();
     }
@@ -92,8 +91,6 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
     const successData = this.processData(this.selectedCustomer);
-
-    console.log('Success data:', successData);
 
     // Handle no data scenario
     if (successData.length === 0) {

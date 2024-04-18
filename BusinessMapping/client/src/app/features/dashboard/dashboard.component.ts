@@ -1,6 +1,5 @@
 import {Component} from '@angular/core';
 import {RevenueOverviewComponent} from "./revenue-overview/revenue-overview.component";
-import {SectorDistributionComponent} from "./sector-distribution/sector-distribution.component";
 import {ProjectSuccessRateComponent} from "./project-success-rate/project-success-rate.component";
 import {CustomerService} from "../shared/services/customer.service";
 import {Customer} from "../shared/models/Customer";
@@ -21,7 +20,6 @@ import {SharedService} from "../shared/services/shared.service";
   standalone: true,
   imports: [
     RevenueOverviewComponent,
-    SectorDistributionComponent,
     ProjectSuccessRateComponent,
     NgForOf,
     NgClass,
@@ -67,7 +65,6 @@ export class DashboardComponent {
     });
 
     this.customerService.getAllProjectCustomerRelations().subscribe((data: Object) => {
-      console.log(data);
       this.ProjectCustomerRelations = data as ProjectCustomerRelation[];
     });
   }

@@ -1,8 +1,9 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {Customer} from "../../shared/models/Customer";
 import {Sector} from '../../shared/models/Sector';
 import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
 import * as d3 from 'd3';
+import {SharedService} from "../../shared/services/shared.service";
 
 @Component({
   selector: 'app-sector-ratio',
@@ -11,14 +12,30 @@ import * as d3 from 'd3';
   templateUrl: './sector-ratio.component.html',
   styleUrls: ['./sector-ratio.component.css']
 })
-export class SectorRatioComponent implements OnChanges, AfterViewInit {
+export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
   @Input() customers!: Customer[];
   @Input() sectors!: Sector[];
   @Input() relationships!: CustomerSectorRelation[];
 
   @ViewChild('pieChartContainer') pieChartContainer!: ElementRef;
 
-  constructor() {
+  selectedCustomer: 'all' | Customer | null = null;
+
+  constructor(private sharedService: SharedService) {
+  }
+
+  ngOnInit() {
+    this.sharedService.currentCustomer.subscribe(customer => {
+      // @ts-ignore
+      this.selectedCustomer = customer;
+      this.updateData(); // Method to update data based on selected customer
+    });
+  }
+
+  updateData() {
+    if (this.customers && this.pieChartContainer) {
+      this.createPieChart();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -38,10 +55,22 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit {
       return acc;
     }, {} as Record<string, number>);
 
-    const data = this.sectors.map(sector => ({
-      name: sector.name,
-      count: sectorCounts[sector.uuid] || 0
-    })).filter(sector => sector.count > 0); // Filter out sectors with 0 customers
+    // @ts-ignore
+    const isAllCustomers = this.selectedCustomer === 'all';
+
+    // Highlight the sector of the selected customer
+    const data = this.sectors.map(sector => {
+      const isHighlighted = !isAllCustomers && this.relationships.some(relation =>
+        // @ts-ignore
+        relation.sectorId === sector.uuid && relation.customerId === this.selectedCustomer
+      );
+      return {
+        name: sector.name,
+        count: sectorCounts[sector.uuid] || 0,
+        isHighlighted: isHighlighted
+      };
+    }).filter(sector => sector.count > 0);
+
 
     // Setup dimensions and radius of the pie chart
     const element = this.pieChartContainer.nativeElement;
@@ -73,7 +102,8 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit {
 
     arc.append("path")
       .attr("d", path as any)
-      .attr("fill", (d: any) => color(d.data.name));
+      // ccff02 is a color that is used to highlight the sector of the selected customer
+      .attr("fill", (d: any) => (d.data as any).isHighlighted ? '#ccff02' : color(d.data.name));
 
     arc.append("text")
       .attr("transform", (d: any) => `translate(${label.centroid(d)})`)
