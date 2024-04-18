@@ -2,10 +2,12 @@
 <div class="bg-gray-100 p-5 min-h-screen">
   <div class="max-w-6xl mx-auto">
     <div class="text-3xl font-bold text-gray-900 mb-5" i18n="@@siteDashboardHeader">Dashboard</div>
-    <!-- Select Dropdown for Customer Selection -->
+    <!-- Select Dropdown for Customer Selection - De Fault: All Customers -->
     <select [(ngModel)]="selectedCustomer"
             (change)="onChangeCustomer()"
-            class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mb-6">
+            class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mb-6"
+            i18n="@@siteDashboardCustomerSelection"
+            aria-label="Select Customer">
       <option value="all">All Customers</option>
       <option *ngFor="let customer of customers"
               [value]="customer.uuid">
