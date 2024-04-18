@@ -1,25 +1,31 @@
 <!-- Dashboard Container -->
 <div class="bg-gray-100 p-5 min-h-screen">
-  <div class="max-w-6xl mx-auto">
-    <div class="text-3xl font-bold text-gray-900 mb-5" i18n="@@siteDashboardHeader">Dashboard</div>
-    <!-- Select Dropdown for Customer Selection - De Fault: All Customers -->
-    <select (change)="onChangeCustomer()"
-            [(ngModel)]="selectedCustomer"
-            aria-label="Select Customer"
-            class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mb-6"
-            i18n="@@siteDashboardCustomerSelection">
-      <option value="all">All Customers</option>
-      <option *ngFor="let customer of customers"
-              [value]="customer.uuid">
-        {{ customer.name }}
-      </option>
-    </select>
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="text-4xl font-bold text-gray-900 mb-10" i18n="@@siteDashboardHeader">Dashboard</div>
+
+    <!-- Select Dropdown for Customer Selection - Default: All Customers -->
+    <div class="flex flex-col sm:flex-row items-center gap-4 mb-8">
+      <label for="customerSelect" class="font-medium text-gray-900">Select a Customer:</label>
+      <select id="customerSelect" (change)="onChangeCustomer()"
+              [(ngModel)]="selectedCustomer"
+              aria-label="Select Customer"
+              class="bg-white border border-gray-300 text-gray-900 text-base rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-auto p-3 shadow-sm"
+              i18n="@@siteDashboardCustomerSelection">
+        <option value="all" selected>All Customers</option>
+        <option *ngFor="let customer of customers" [value]="customer.uuid">
+          {{ customer.name }}
+        </option>
+      </select>
+    </div>
+
     <!-- Cards Section -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <!-- Dynamic Card Generation -->
-      <div *ngFor="let card of cards" [ngClass]="{'lg:col-span-2': card.isLarge, 'lg:col-span-1': !card.isLarge}"
-           class="bg-white shadow-lg rounded-lg p-5">
-        <div class="mb-2 font-bold text-xl">{{ card.title }}</div>
+      <div *ngFor="let card of cards"
+           [ngClass]="{'lg:col-span-2': card.isLarge, 'lg:col-span-1': !card.isLarge}"
+           class="bg-white shadow-lg rounded-lg p-6 transition-shadow hover:shadow-xl">
+        <div class="mb-4 font-bold text-xl">{{ card.title }}</div>
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
           <app-revenue-overview [customers]="customers"></app-revenue-overview>
         </ng-container>

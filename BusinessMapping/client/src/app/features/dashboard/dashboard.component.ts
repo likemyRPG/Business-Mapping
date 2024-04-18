@@ -40,7 +40,7 @@ export class DashboardComponent {
   cards = [
     {title: 'Customer Revenue Overview', isLarge: true},
     {title: 'Amount of Customers Per Sector', isLarge: false},
-    {title: 'Project Success Rate', isLarge: true},
+    {title: 'Project Success Rate', isLarge: false},
   ];
   selectedCustomer: 'all' | Customer | null = null;
 
