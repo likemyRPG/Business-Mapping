@@ -11,6 +11,8 @@ import {
 import {SectorRatioComponent} from "./sector-ratio/sector-ratio.component";
 import {Sector} from "../shared/models/Sector";
 import {CustomerSectorRelation} from "../shared/models/CustomerSectorRelation";
+import {Project} from "../shared/models/Project";
+import {ProjectCustomerRelation} from "../shared/models/ProjectCustomerRelation";
 
 @Component({
   selector: 'app-dashboard',
@@ -31,10 +33,13 @@ import {CustomerSectorRelation} from "../shared/models/CustomerSectorRelation";
 export class DashboardComponent {
   customers: Customer[] = [];
   sectors: Sector[] = [];
-  relationships: CustomerSectorRelation[] = [];
+  projects: Project[] = [];
+  CustomerSectorRelationships: CustomerSectorRelation[] = [];
+  ProjectCustomerRelations: ProjectCustomerRelation[] = [];
   cards = [
-    {title: 'Customer Revenue Overview', isLarge: true},
-    {title: 'Amount of Customers Per Sector', isLarge: false},
+    // {title: 'Customer Revenue Overview', isLarge: true},
+    // {title: 'Amount of Customers Per Sector', isLarge: false},
+    {title: 'Project Success Rate', isLarge: true},
   ];
 
   constructor(private customerService: CustomerService) {
@@ -50,7 +55,16 @@ export class DashboardComponent {
     });
 
     this.customerService.getAllCustomerSectorRelations().subscribe((data: CustomerSectorRelation[]) => {
-      this.relationships = data;
+      this.CustomerSectorRelationships = data;
+    });
+
+    this.customerService.getAllProjects().subscribe((data: Object) => {
+      this.projects = data as Project[];
+    });
+
+    this.customerService.getAllProjectCustomerRelations().subscribe((data: Object) => {
+      console.log(data);
+      this.ProjectCustomerRelations = data as ProjectCustomerRelation[];
     });
   }
 }

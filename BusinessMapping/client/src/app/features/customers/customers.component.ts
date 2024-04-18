@@ -47,7 +47,6 @@ export class CustomersComponent {
     });
 
     this.customerService.getAllProjectCustomerRelations().subscribe((data: Object) => {
-      console.log(data);
       this.projectCustomerRelations = data as ProjectCustomerRelation[];
     });
   }

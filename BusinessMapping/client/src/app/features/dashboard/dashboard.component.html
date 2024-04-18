@@ -8,13 +8,15 @@
            [ngClass]="{'lg:col-span-2': card.isLarge, 'lg:col-span-1': !card.isLarge}"
            class="bg-white shadow-lg rounded-lg p-5">
         <div class="mb-2 font-bold text-xl">{{ card.title }}</div>
-        <!-- Placeholder for dynamic component loading -->
-        <!-- Example of using *ngIf to load different components based on the card title -->
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
           <app-revenue-overview [customers]="customers"></app-revenue-overview>
         </ng-container>
+        <ng-container *ngIf="card.title === 'Project Success Rate'">
+          <app-project-success-rate [projects]="projects" [customers]="customers"
+                                    [relationships]="ProjectCustomerRelations"></app-project-success-rate>
+        </ng-container>
         <ng-container *ngIf="card.title === 'Amount of Customers Per Sector'">
-          <app-sector-ratio [customers]="customers" [relationships]="relationships"
+          <app-sector-ratio [customers]="customers" [relationships]="CustomerSectorRelationships"
                             [sectors]="sectors"></app-sector-ratio>
         </ng-container>
       </div>
