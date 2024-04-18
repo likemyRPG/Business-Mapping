@@ -40,6 +40,18 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
 
   ngAfterViewInit(): void {
     this.createPieChart();
+    this.addResizeListener();
+  }
+
+  addResizeListener(): void {
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        this.createPieChart();
+      }
+    });
+    if (this.pieChartContainer) {
+      resizeObserver.observe(this.pieChartContainer.nativeElement);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -49,7 +61,6 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
   }
 
   private createPieChart(): void {
-    // First, map sectors to customer count
     const sectorCounts = this.relationships.reduce((acc, relation) => {
       acc[relation.sectorId] = (acc[relation.sectorId] || 0) + 1;
       return acc;

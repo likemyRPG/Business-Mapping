@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {Project} from "../../shared/models/Project";
 import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelation";
@@ -23,31 +21,40 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   @Input() customers!: Customer[];
   @Input() relationships!: ProjectCustomerRelation[];
   @Input() projects!: Project[];
-
-  @ViewChild('projectSuccessRateContainer', { static: true }) projectSuccessRateContainer!: ElementRef;
   selectedCustomer: 'all' | Customer | null = null;
 
-  constructor(private sharedService: SharedService) {
+  @ViewChild('projectSuccessRateContainer', { static: true }) projectSuccessRateContainer!: ElementRef;
 
-  }
+  constructor(private sharedService: SharedService) {}
 
   ngOnInit() {
     this.sharedService.currentCustomer.subscribe(customer => {
+      // @ts-ignore
       this.selectedCustomer = customer;
       this.updateData(); // Method to update data based on selected customer
     });
   }
 
   updateData() {
-    if (this.projects && this.customers && this.relationships && this.projectSuccessRateContainer) {
-      this.createProjectSuccessRate();
-    }
+    this.createProjectSuccessRate();
   }
 
   ngAfterViewInit(): void {
     // Wait for data to be available
     if (this.projects && this.customers && this.relationships && this.projectSuccessRateContainer) {
       this.createProjectSuccessRate();
+      this.addResizeListener();
+    }
+  }
+
+  addResizeListener(): void {
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        this.createProjectSuccessRate();
+      }
+    });
+    if (this.projectSuccessRateContainer) {
+      resizeObserver.observe(this.projectSuccessRateContainer.nativeElement);
     }
   }
 
@@ -57,14 +64,15 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     }
   }
 
-  onChangeCustomer(customer: string) {
-    this.sharedService.changeCustomer(customer);
-  }
-
   protected createProjectSuccessRate(): void {
+    if(!this.projectSuccessRateContainer) {
+      return;
+    }
     const element = this.projectSuccessRateContainer.nativeElement;
-    const width = element.offsetWidth || 400;
-    const height = window.innerHeight * 0.5;
+    const margin = {top: 20, right: 20, bottom: 100, left: 60};
+    const containerWidth = element.offsetWidth;
+    const width = containerWidth - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
     const radius = Math.min(width, height) / 2;
 
     // Clear previous SVG to prevent duplication
@@ -72,10 +80,10 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
 
     const svg = d3.select(this.projectSuccessRateContainer.nativeElement)
       .append('svg')
-      .attr('width', width)
-      .attr('height', height)
-      // .append('g')
-      .attr('transform', `translate(${width / 2}, ${height / 2})`);
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
 
     const color = d3.scaleOrdinal(["#4CAF50", "#F44336"]); // Green for success, Red for no success
 
@@ -104,20 +112,22 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     }
 
     const arcs = g.selectAll(".arc")
+      // @ts-ignore
       .data(pie(successData))
       .enter().append("g")
       .attr("class", "arc");
 
     arcs.append("path")
+      // @ts-ignore
       .attr("d", arc)
-      .style("fill", d => color(d.data.type));
+      .style("fill", d => color((d as any).data.type));
 
     // Add text labels
     arcs.append("text")
-      .attr("transform", d => `translate(${arc.centroid(d)})`)
+      .attr("transform", d => `translate(${arc.centroid((d as any))})`)
       .attr("dy", "0.35em")
       .style("text-anchor", "middle")
-      .text(d => `${d.data.type}: ${d.data.value}%`);
+      .text(d => `${(d as any).data.type}: ${(d as any).data.value}%`);
 
     // Add a simple legend
     const legend = svg.selectAll(".legend")
@@ -142,12 +152,13 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     svg.attr('width', width).attr('height', height);
   }
 
-  private processData(selectedCustomer: string) {
+  private processData(selectedCustomer: "all" | Customer | null) {
     let filteredProjects = this.projects;
 
     if (selectedCustomer && selectedCustomer !== 'all') {
+      // @ts-ignore
       const customerProjects = this.relationships.filter(r => r.customerId === selectedCustomer).map(r => r.projectId);
-      filteredProjects = this.projects.filter(p => customerProjects.includes(p.uuid));
+      filteredProjects = this.projects.filter(p => customerProjects.includes((p as any).uuid));
     }
 
     const successCount = filteredProjects.filter(p => p.success).length;
