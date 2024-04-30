@@ -58,6 +58,8 @@
 
       <p *ngIf="isSector(selectedNode)"><strong>Sector Revenue:</strong> ${{ selectedNode.revenue | number }}</p>
 
+      <p *ngIf="isAccountManager(selectedNode)"><strong>Managed Revenue:</strong> ${{ selectedNode.revenue | number }}</p>
+
       <p *ngIf="isCustomer(selectedNode)"><strong>Industry:</strong> {{ selectedNode.industry }}</p>
       <p *ngIf="isCustomer(selectedNode)"><strong>Location:</strong> {{ selectedNode.location }}</p>
 

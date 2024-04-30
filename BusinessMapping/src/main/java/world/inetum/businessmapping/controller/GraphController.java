@@ -35,7 +35,7 @@ public class GraphController {
         return projectService.findAllCustomerProjectRelations();
     }
 
-    @GetMapping("/accountManagers-sectors")
+    @GetMapping("/account-managers-sectors")
     public Flux<LinkAccountManagerSectorDto> getAllAccountManagersAndSectors() {
         return accountManagerService.findAllAccountManagerSectorRelationsAsLinks();
     }

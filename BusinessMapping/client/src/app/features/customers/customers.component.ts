@@ -8,8 +8,10 @@ import {
 } from "./customer-visualization-component/customer-visualization-component.component";
 import {Sector} from "../shared/models/Sector";
 import {Project} from "../shared/models/Project";
+import {AccountManager} from "../shared/models/AccountManager";
 import {CustomerSectorRelation} from "../shared/models/CustomerSectorRelation";
 import {ProjectCustomerRelation} from "../shared/models/ProjectCustomerRelation";
+import {AccountManagerSectorRelation} from "../shared/models/AccountManagerSectorRelation";
 
 @Component({
   selector: 'app-customers',
@@ -22,8 +24,10 @@ export class CustomersComponent {
   customers: Customer[] = [];
   sectors: Sector[] = [];
   projects: Project[] = [];
+  accountManagers: AccountManager[] = [];
   customerSectorRelations: CustomerSectorRelation[] = [];
   projectCustomerRelations: ProjectCustomerRelation[] = [];
+  accountManagerSectorRelations: AccountManagerSectorRelation[] = [];
 
 
   constructor(private customerService: CustomerService) {
@@ -48,6 +52,14 @@ export class CustomersComponent {
 
     this.customerService.getAllProjectCustomerRelations().subscribe((data: Object) => {
       this.projectCustomerRelations = data as ProjectCustomerRelation[];
+    });
+
+    this.customerService.getAllAccountManagers().subscribe((data: Object) => {
+      this.accountManagers = data as AccountManager[];
+    });
+
+    this.customerService.getAllAccountManagerSectorRelations().subscribe((data: Object) => {
+      this.accountManagerSectorRelations = data as AccountManagerSectorRelation[];
     });
   }
 }

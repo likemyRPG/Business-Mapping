@@ -30,7 +30,15 @@ export class CustomerService {
     return this.http.get(this.apiUrl + '/projects');
   }
 
+  getAllAccountManagers() {
+    return this.http.get(this.apiUrl + '/account-managers');
+  }
+
   getAllProjectCustomerRelations() {
     return this.http.get(this.apiUrl + '/graphs/customers-projects');
+  }
+
+  getAllAccountManagerSectorRelations() {
+    return this.http.get(this.apiUrl + '/graphs/account-managers-sectors');
   }
 }

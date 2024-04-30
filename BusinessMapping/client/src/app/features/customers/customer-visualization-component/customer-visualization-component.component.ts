@@ -17,6 +17,8 @@ import {SimulationNodeDatum} from 'd3';
 import {DatePipe, DecimalPipe, NgClass, NgIf} from "@angular/common";
 import {Project} from "../../shared/models/Project";
 import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelation";
+import {AccountManagerSectorRelation} from "../../shared/models/AccountManagerSectorRelation";
+import {AccountManager} from "../../shared/models/AccountManager";
 
 @Component({
   selector: 'app-customer-visualization-component',
@@ -35,8 +37,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   @Input() customers: Customer[] | undefined;
   @Input() customerSectorRelations: CustomerSectorRelation[] | undefined;
   @Input() projectCustomerRelations: ProjectCustomerRelation[] | undefined;
+  @Input() accountManagerSectorRelations!: AccountManagerSectorRelation[];
   @Input() sectors: Sector[] | undefined;
   @Input() projects: Project[] | undefined;
+  @Input() accountManagers: AccountManager[] | undefined;
   selectedCustomer: Customer | null = null;
   selectedNode: Customer | Sector | Project | null = null;
   selectedNodeType: string = ''; // Track the type of the selected node
@@ -81,7 +85,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   createChart(): void {
-    if (!this.customers || !this.sectors || !this.chartContainer || !this.customerSectorRelations || !this.projects || !this.projectCustomerRelations) {
+    if (!this.customers || !this.sectors || !this.chartContainer || !this.customerSectorRelations || !this.projects || !this.projectCustomerRelations || !this.accountManagers || !this.accountManagerSectorRelations) {
       return;
     }
 
@@ -92,6 +96,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Define two color scales for customers and sectors
     const customerColor = d3.scaleOrdinal().range(["#3182bd"]); // Example blue color for customers
     const sectorColor = d3.scaleOrdinal().range(["#31a354"]); // Example green color for sectors
+    const accountManagerColor = d3.scaleOrdinal().range(["#756bb1"]); // Example purple color for account managers
 
     d3.select(element).selectAll('svg').remove(); // Clear the existing chart
 
@@ -129,6 +134,18 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       return acc;
     }, {});
 
+    // Account manager revenues are based on the total revenue of the sectors they manage
+    const accountManagerRevenues = this.accountManagerSectorRelations.reduce((acc, cur) => {
+        // @ts-ignore
+        const sectorRevenue = sectorRevenues[cur.sectorId];
+        if (sectorRevenue) {
+          // @ts-ignore
+          acc[cur.accountManagerId] = (acc[cur.accountManagerId] || 0) + sectorRevenue;
+        }
+        return acc;
+    }
+      , {});
+
     // New code to update each sector's revenue property
     this.sectors.forEach(sector => {
       // @ts-ignore
@@ -152,6 +169,12 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .domain([0, d3.max(this.projects, d => +d.budget)])
       .range([10, 30]); // Adjust min and max radius as needed
 
+    // Radius of account managers is based on the total revenue of the sectors they manage
+    const accountManagerRadiusScale = d3.scaleSqrt()
+      // @ts-ignore
+      .domain([0, d3.max(Object.values(accountManagerRevenues))])
+      .range([10, 30]);
+
     // @ts-ignore
     const combinedNodes: Array<SimulationNodeDatum & (Customer | Sector)> = [
       ...this.customers.map(customer => ({...customer, type: 'customer', id: customer.uuid, visible: false})),
@@ -166,12 +189,22 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       })),
       // @ts-ignore
       ...this.projects.map(project => ({...project, type: 'project', id: project.uuid, visible: false})),
+      // @ts-ignore
+      ...this.accountManagers.map(accountManager => ({
+        ...accountManager,
+        type: 'accountManager',
+        id: accountManager.uuid,
+        // @ts-ignore
+        revenue: accountManagerRevenues[accountManager.uuid],
+        visible: true
+      }))
     ];
 
     // Transform the customerSectorRelations data to match D3's expected format
     const links = [
       ...this.customerSectorRelations.map(r => ({source: r.customerId, target: r.sectorId})),
-      ...this.projectCustomerRelations.map(r => ({source: r.customerId, target: r.projectId}))
+      ...this.projectCustomerRelations.map(r => ({source: r.customerId, target: r.projectId})),
+      ...this.accountManagerSectorRelations.map(r => ({source: r.accountManagerId, target: r.sectorId}))
     ];
 
     // Draw links (Arrows)
@@ -208,7 +241,21 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       // @ts-ignore
       .attr("r", d => 'revenue' in d ? customerRadiusScale(d.revenue) : sectorRadiusScale(sectorRevenues[d.uuid]))
       // @ts-ignore
-      .attr("fill", d => d.type === 'customer' ? customerColor() : sectorColor())
+      // Use case-based fill color
+      .attr("fill", d => {
+        if ((d as any).type === 'customer') {
+          // @ts-ignore
+          return customerColor();
+        } else if ((d as any).type === 'sector') {
+          // @ts-ignore
+          return sectorColor();
+        } else if ((d as any).type === 'accountManager') {
+          // @ts-ignore
+          return accountManagerColor();
+        }
+        return 'black';
+      }
+      );
 
     node.append("circle")
       .attr("r", d => {
@@ -405,6 +452,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
   isSector(node: any): node is Sector {
     return node?.type === 'sector';
+  }
+
+  isAccountManager(node: any): node is AccountManager {
+    return node && node.type === 'accountManager';
   }
 
   isProject(node: any): node is Project {
