@@ -1,14 +1,14 @@
 import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
+import {RouterModule, RouterOutlet} from '@angular/router';
 import {SidebarComponent} from "./features/shared/components/sidebar/sidebar.component";
 import {SafeHtmlPipe} from './safe-html.pipe';
 import {LoadingComponent} from "./features/shared/components/loading/loading.component";
-import {NgIf} from "@angular/common";
+import {CommonModule, NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, SafeHtmlPipe, LoadingComponent, NgIf],
+  imports: [RouterOutlet, SidebarComponent, SafeHtmlPipe, LoadingComponent, NgIf, RouterModule, CommonModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
