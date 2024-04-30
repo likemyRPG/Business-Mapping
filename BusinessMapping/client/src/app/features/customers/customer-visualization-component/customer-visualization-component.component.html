@@ -49,7 +49,6 @@
     <h2 class="text-xl font-semibold p-4 border-b border-gray-700 text-uppercase"> {{ selectedNode?.type || '' }}
       Details</h2>
     <div class="p-4 overflow-auto">
-      <p>Type Debug: {{ selectedNode?.type }}</p> <!-- Remove after debugging -->
       <p *ngIf="selectedNode"><strong>Name:</strong> {{ selectedNode.name }}</p>
 
       <p *ngIf="isCustomer(selectedNode)"><strong>Revenue:</strong> ${{ selectedNode.revenue  | number }}</p>
