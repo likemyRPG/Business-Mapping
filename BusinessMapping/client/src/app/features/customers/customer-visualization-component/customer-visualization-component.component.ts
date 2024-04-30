@@ -371,6 +371,17 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     this.sidebarExpanded = !this.sidebarExpanded;
   }
 
+  resetView(): void {
+    console.log('resetView')
+    // Check if chartContainer is defined and make sure the SVG element exists
+    if (this.chartContainer && this.chartContainer.nativeElement) {
+      const svgElement = d3.select(this.chartContainer.nativeElement).select('svg');
+      // Reset the zoom transformation using D3's zoomIdentity
+      svgElement.transition().duration(750).call(this.zoomBehavior.transform, d3.zoomIdentity);
+    }
+  }
+
+
   zoomIn() {
     // @ts-ignore
     this.zoomBy(1.2)
