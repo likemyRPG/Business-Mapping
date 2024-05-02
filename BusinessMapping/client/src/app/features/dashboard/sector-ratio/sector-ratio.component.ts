@@ -21,6 +21,7 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
   @ViewChild('pieChartContainer') pieChartContainer!: ElementRef;
 
   selectedCustomer: 'all' | Customer | null = null;
+  selectedSectors: Sector[] = [];
 
   constructor(private sharedService: SharedService, private exportService: GraphExportService) {
   }
@@ -123,7 +124,21 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
     arc.append("path")
       .attr("d", path as any)
       // ccff02 is a color that is used to highlight the sector of the selected customer
-      .attr("fill", (d: any) => (d.data as any).isHighlighted ? '#ccff02' : color(d.data.name));
+      .attr("fill", (d: any) => (d.data as any).isHighlighted ? '#ccff02' : color(d.data.name))
+      .on("click", (event, d) => {
+        // @ts-ignore
+        const sector = this.sectors.find(sector => sector.name === d.data.name);
+        // @ts-ignore
+        const index = this.selectedSectors.findIndex(selectedSector => selectedSector.uuid === sector.uuid);
+        if (index === -1) {
+          this.selectedSectors.push((sector as Sector));
+        } else {
+          this.selectedSectors.splice(index, 1);
+        }
+        this.sharedService.emitSectorSelectionChange(this.selectedSectors); // Notify other components
+        console.log(this.selectedSectors);
+        this.createPieChart(); // Re-render the chart to update styling
+      });
 
     arc.append("text")
       .attr("transform", (d: any) => `translate(${label.centroid(d)})`)

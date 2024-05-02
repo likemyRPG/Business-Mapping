@@ -30,11 +30,11 @@
            class="bg-white shadow-lg rounded-lg p-6 transition-shadow hover:shadow-xl">
         <div class="mb-4 font-bold text-xl">{{ card.title }}</div>
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
-          <app-revenue-overview [customers]="customers"></app-revenue-overview>
+          <app-revenue-overview [customers]="customers" [relationships]="CustomerSectorRelationships"></app-revenue-overview>
         </ng-container>
         <ng-container *ngIf="card.title === 'Project Success Rate'">
           <app-project-success-rate [customers]="customers" [projects]="projects"
-                                    [relationships]="ProjectCustomerRelations"></app-project-success-rate>
+                                    [projectCustomerRelations]="ProjectCustomerRelations" [customerSectorRelations]="CustomerSectorRelationships"></app-project-success-rate>
         </ng-container>
         <ng-container *ngIf="card.title === 'Amount of Customers Per Sector'">
           <app-sector-ratio [customers]="customers" [relationships]="CustomerSectorRelationships"

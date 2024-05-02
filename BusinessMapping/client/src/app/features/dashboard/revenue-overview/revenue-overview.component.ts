@@ -5,6 +5,8 @@ import {FormsModule} from "@angular/forms";
 import {NgIf} from "@angular/common";
 import {SharedService} from "../../shared/services/shared.service";
 import {GraphExportService} from "../../shared/services/gaph-export.service";
+import {Sector} from "../../shared/models/Sector";
+import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
 
 @Component({
   selector: 'app-revenue-overview',
@@ -22,6 +24,9 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
   @Input() customers: Customer[] | undefined;
 
   selectedCustomer: 'all' | Customer | null = null;
+  selectedSectors: Sector[] = [];
+  @Input() relationships!: CustomerSectorRelation[];
+
 
   constructor(private sharedService: SharedService, private exportService: GraphExportService) {
   }
@@ -31,6 +36,11 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
       // @ts-ignore
       this.selectedCustomer = customer;
       this.updateData(); // Method to update data based on selected customer
+    });
+
+    this.sharedService.selectedSectorsSource.subscribe(selectedSectors => {
+      this.selectedSectors = selectedSectors;
+      this.updateData(); // Method to update data based on selected sectors
     });
   }
 
@@ -105,11 +115,22 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const data = this.customers.map(customer => ({
+    const selectedSectorIds = new Set(this.selectedSectors.map(sector => sector.uuid));
+
+    // Filter customers based on the relationships and selected sectors
+    const filteredCustomers = this.selectedSectors.length > 0
+      ? this.customers.filter(customer =>
+        this.relationships.some(rel =>
+          // @ts-ignore
+          rel.customerId === customer.uuid && selectedSectorIds.has(rel.sectorId)))
+      : this.customers; // Show all customers if no sector is selected
+
+    const data = filteredCustomers.map(customer => ({
       name: customer.name,
       revenue: +customer.revenue,
       id: customer.uuid
     }));
+
 
     x.domain(data.map(d => d.name));
 

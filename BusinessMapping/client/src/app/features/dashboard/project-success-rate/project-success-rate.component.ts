@@ -7,6 +7,8 @@ import {NgForOf} from "@angular/common";
 import * as d3 from 'd3';
 import {SharedService} from "../../shared/services/shared.service";
 import {GraphExportService} from "../../shared/services/gaph-export.service";
+import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
+import {Sector} from "../../shared/models/Sector";
 
 @Component({
   selector: 'app-project-success-rate',
@@ -20,11 +22,13 @@ import {GraphExportService} from "../../shared/services/gaph-export.service";
 })
 export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, OnInit {
   @Input() customers!: Customer[];
-  @Input() relationships!: ProjectCustomerRelation[];
+  @Input() projectCustomerRelations!: ProjectCustomerRelation[];
   @Input() projects!: Project[];
+  @Input() customerSectorRelations!: CustomerSectorRelation[];
   selectedCustomer: 'all' | Customer | null = null;
 
   @ViewChild('projectSuccessRateContainer', {static: true}) projectSuccessRateContainer!: ElementRef;
+  private selectedSectors: Sector[] = [];
 
   constructor(private sharedService: SharedService, private exportService: GraphExportService) {
   }
@@ -35,6 +39,11 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       this.selectedCustomer = customer;
       this.updateData(); // Method to update data based on selected customer
     });
+
+    this.sharedService.selectedSectorsSource.subscribe(selectedSectors => {
+      this.selectedSectors = selectedSectors;
+      this.updateData(); // Method to update data based on selected sectors
+    });
   }
 
   updateData() {
@@ -43,7 +52,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
 
   ngAfterViewInit(): void {
     // Wait for data to be available
-    if (this.projects && this.customers && this.relationships && this.projectSuccessRateContainer) {
+    if (this.projects && this.customers && this.projectCustomerRelations && this.projectSuccessRateContainer) {
       this.createProjectSuccessRate();
       this.addResizeListener();
     }
@@ -61,7 +70,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.projects && this.customers && this.relationships && this.projectSuccessRateContainer) {
+    if (this.projects && this.customers && this.projectCustomerRelations && this.projectSuccessRateContainer) {
       this.createProjectSuccessRate();
     }
   }
@@ -164,10 +173,35 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   private processData(selectedCustomer: "all" | Customer | null) {
     let filteredProjects = this.projects;
 
-    if (selectedCustomer && selectedCustomer !== 'all') {
+    // Filter projects based on the customers in selected sectors
+    if (this.selectedSectors.length > 0) {
+      const selectedSectorIds = new Set(this.selectedSectors.map(sector => sector.uuid));
+      const customerIdsFromSelectedSectors = new Set(
+        this.customerSectorRelations
+          // @ts-ignore
+          .filter(csr => selectedSectorIds.has(csr.sectorId))
+          .map(csr => csr.customerId)
+      );
+
+      const projectIdsForSelectedCustomers = new Set(
+        this.projectCustomerRelations
+          .filter(pcr => customerIdsFromSelectedSectors.has(pcr.customerId))
+          .map(pcr => pcr.projectId)
+      );
       // @ts-ignore
-      const customerProjects = this.relationships.filter(r => r.customerId === selectedCustomer).map(r => r.projectId);
-      filteredProjects = this.projects.filter(p => customerProjects.includes((p as any).uuid));
+      filteredProjects = this.projects.filter(p => projectIdsForSelectedCustomers.has(p.uuid));
+    }
+
+    // Additional filter by selected customer if any
+    if (selectedCustomer && selectedCustomer !== 'all') {
+      const customerProjects = new Set(
+        this.projectCustomerRelations
+          // @ts-ignore
+          .filter(r => r.customerId === selectedCustomer.uuid)
+          .map(r => r.projectId)
+      );
+      // @ts-ignore
+      filteredProjects = filteredProjects.filter(p => customerProjects.has(p.uuid));
     }
 
     const successCount = filteredProjects.filter(p => p.success && p.onTime && p.actualCost <= p.budget).length;
