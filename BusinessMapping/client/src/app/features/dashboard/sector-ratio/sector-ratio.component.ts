@@ -88,7 +88,8 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
       return {
         name: sector.name,
         count: sectorCounts[sector.uuid] || 0,
-        isHighlighted: isHighlighted
+        isHighlighted: isHighlighted,
+        isSelected: this.selectedSectors.some(selectedSector => selectedSector.uuid === sector.uuid)
       };
     }).filter(sector => sector.count > 0);
 
@@ -124,7 +125,11 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
     arc.append("path")
       .attr("d", path as any)
       // ccff02 is a color that is used to highlight the sector of the selected customer
-      .attr("fill", (d: any) => (d.data as any).isHighlighted ? '#ccff02' : color(d.data.name))
+      .attr("fill", (d: any) => (d.data as any).isSelected ? '#ccff02' : color(d.data.name))
+      // @ts-ignore
+      .attr("stroke", d => d.data.isHighlighted ? 'black' : 'none') // Apply a black stroke to highlighted sectors
+      // @ts-ignore
+      .attr("stroke-width", d => d.data.isHighlighted ? 2 : 0) // Increase stroke width for visibility
       .on("click", (event, d) => {
         // @ts-ignore
         const sector = this.sectors.find(sector => sector.name === d.data.name);
