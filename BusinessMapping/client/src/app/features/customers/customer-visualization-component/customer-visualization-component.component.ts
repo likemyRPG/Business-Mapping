@@ -96,7 +96,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     // Define two color scales for customers and sectors
     const customerColor = d3.scaleOrdinal().range(["#3182bd"]); // Example blue color for customers
     const sectorColor = d3.scaleOrdinal().range(["#31a354"]); // Example green color for sectors
-    const accountManagerColor = d3.scaleOrdinal().range(["#756bb1"]); // Example purple color for account managers
+    const projectColor = d3.scaleOrdinal().range(["#fd8d3c"]); // Example orange color for projects
+    const accountManagerColor = d3.scaleOrdinal().range(["#e6550d"]); // Example red color for account managers
 
     d3.select(element).selectAll('svg').remove(); // Clear the existing chart
 
@@ -107,6 +108,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         svg.selectAll("text").style("display", function () {
           return event.transform.k > .3 ? "block" : "none";
         });
+        updateLegendPosition(event.transform);
       });
 
     const svg = d3.select(element).append('svg')
@@ -252,6 +254,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         } else if ((d as any).type === 'accountManager') {
           // @ts-ignore
           return accountManagerColor();
+        } else if ((d as any).type === 'project') {
+          // @ts-ignore
+          return projectColor();
         }
         return 'black';
       }
@@ -267,7 +272,23 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         return 10;
       })
       // @ts-ignore
-      .attr("fill", d => (d as any).type === 'customer' ? customerColor() : sectorColor());
+      .attr("fill", d => {
+        if ((d as any).type === 'customer') {
+          // @ts-ignore
+          return customerColor();
+        } else if ((d as any).type === 'sector') {
+          // @ts-ignore
+          return sectorColor();
+        } else if ((d as any).type === 'accountManager') {
+          // @ts-ignore
+          return accountManagerColor();
+        } else if ((d as any).type === 'project') {
+          // @ts-ignore
+          return projectColor();
+        }
+        return 'black';
+      }
+      );
 
     // Append text to each group
     node.append("text")
@@ -386,12 +407,12 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     const legend = svg.append("g")
       .attr("class", "legend")
-      .attr("transform", "translate(20,20)"); // Adjust position as needed
+      .attr("transform", "translate(20,20)")
+      .style("pointer-events", "none"); // Prevent legend from interfering with zoom
 
     legend.append("circle")
       .attr("r", 6)
-      // @ts-ignore
-      .attr("fill", customerColor)
+      .attr("fill", customerColor as any)
       .attr("cy", 0);
 
     legend.append("text")
@@ -402,8 +423,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     legend.append("circle")
       .attr("r", 6)
-      // @ts-ignore
-      .attr("fill", sectorColor)
+      .attr("fill", sectorColor as any)
       .attr("cy", 20);
 
     legend.append("text")
@@ -412,22 +432,40 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .attr("dy", "0.35em")
       .text("Sector");
 
+    legend.append("circle")
+      .attr("r", 6)
+      .attr("fill", accountManagerColor as any)
+      .attr("cy", 40);
+
+    legend.append("text")
+      .attr("x", 12)
+      .attr("y", 40)
+      .attr("dy", "0.35em")
+      .text("Account Manager");
+
+    // Add a legend for projects
+    legend.append("circle")
+      .attr("r", 6)
+      .attr("fill", projectColor as any)
+      .attr("cy", 60);
+
+    legend.append("text")
+      .attr("x", 12)
+      .attr("y", 60)
+      .attr("dy", "0.35em")
+      .text("Project");
+
+    const updateLegendPosition = (transform: any) => {
+      // Legend position is fixed at the top-left corner
+      legend.attr("transform", `translate(${20 / transform.k},${20 / transform.k})`);
+    }
+
+    updateLegendPosition({ x: 0, y: 0, k: 1 });
   }
 
   toggleSidebar() {
     this.sidebarExpanded = !this.sidebarExpanded;
   }
-
-  resetView(): void {
-    console.log('resetView')
-    // Check if chartContainer is defined and make sure the SVG element exists
-    if (this.chartContainer && this.chartContainer.nativeElement) {
-      const svgElement = d3.select(this.chartContainer.nativeElement).select('svg');
-      // Reset the zoom transformation using D3's zoomIdentity
-      svgElement.transition().duration(750).call(this.zoomBehavior.transform, d3.zoomIdentity);
-    }
-  }
-
 
   zoomIn() {
     // @ts-ignore
