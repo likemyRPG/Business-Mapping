@@ -21,30 +21,6 @@ stages:
         publishJUnitResults: true
         testResultsFiles: '**/surefire-reports/TEST-*.xml'
 
-    - task: DockerInstaller@0
-      displayName: "Install Docker"
-      inputs:
-        dockerVersion: '17.09.0-ce'
-
-    - script: |
-        docker pull neo4j:latest
-        docker run -d --name neo4j -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/test neo4j:latest
-      displayName: 'Start Neo4j Docker Container'
-
-- stage: Deploy
-  jobs:
-  - deployment: DeployWeb
-    displayName: 'Deploy Web App'
-    environment: 
-      name: 'production'
-      resourceName: ip-172-31-28-179
-      resourceType: virtualMachine
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - script: echo Hello world
-
 - stage: SetupNode
   jobs:
   - job: SetupNodeJs
