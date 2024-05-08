@@ -22,6 +22,11 @@ stages:
         npm run build -- --configuration production
       displayName: 'Build Angular Application'
 
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/angular
+        cp -r BusinessMapping/client/dist/* $(Build.ArtifactStagingDirectory)/angular
+      displayName: 'Copy Angular Build Output'
+
 - stage: Build
   dependsOn: SetupNode
   jobs:
@@ -39,14 +44,19 @@ stages:
         publishJUnitResults: true
         testResultsFiles: '**/surefire-reports/TEST-*.xml'
 
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/java
+        cp -r BusinessMapping/target/* $(Build.ArtifactStagingDirectory)/java
+      displayName: 'Copy Java Build Output'
+
 - stage: Publish
   dependsOn: Build
   jobs:
   - job: PublishApplication
     displayName: 'Create Artifact'
     steps:
-      - task: PublishBuildArtifacts@1
-        inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-          ArtifactName: 'BusinessMapping'
-          publishLocation: 'Container'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'BusinessMapping'
+        publishLocation: 'Container'
