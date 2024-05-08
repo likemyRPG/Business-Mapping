@@ -38,3 +38,15 @@ stages:
         goals: 'package'
         publishJUnitResults: true
         testResultsFiles: '**/surefire-reports/TEST-*.xml'
+
+- stage: Publish
+  dependsOn: Build
+  jobs:
+  - job: PublishApplication
+    displayName: 'Create Artifact'
+    steps:
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'BusinessMapping'
+          publishLocation: 'Container'
