@@ -5,22 +5,6 @@ pool:
   vmImage: 'Ubuntu-latest'
 
 stages:
-- stage: Build
-  jobs:
-  - job: BuildApplication
-    displayName: 'Build Java Application and Docker Image'
-    steps:
-    - task: Maven@3
-      inputs:
-        mavenPomFile: 'BusinessMapping/pom.xml'
-        mavenOptions: '-Xmx3072m'
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.21'
-        jdkArchitectureOption: 'x64'
-        goals: 'package'
-        publishJUnitResults: true
-        testResultsFiles: '**/surefire-reports/TEST-*.xml'
-
 - stage: SetupNode
   jobs:
   - job: SetupNodeJs
@@ -37,3 +21,20 @@ stages:
         npm install
         npm run build -- --configuration production
       displayName: 'Build Angular Application'
+
+- stage: Build
+  dependsOn: SetupNode
+  jobs:
+  - job: BuildApplication
+    displayName: 'Build Java Application and Docker Image'
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'BusinessMapping/pom.xml'
+        mavenOptions: '-Xmx3072m'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.21'
+        jdkArchitectureOption: 'x64'
+        goals: 'package'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
