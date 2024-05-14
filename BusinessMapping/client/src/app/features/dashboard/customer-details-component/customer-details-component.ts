@@ -20,7 +20,6 @@ export class CustomerDetailsCardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscription.add(this.sharedService.currentCustomer.subscribe(customer => {
         this.selectedCustomer = customer ? this.customers.find(c => c.uuid === customer) || null : null;
-        console.log("Selected customer is now:", this.selectedCustomer);
     }));
   }
 
