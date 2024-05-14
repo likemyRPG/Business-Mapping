@@ -134,7 +134,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     const element = this.chartContainer.nativeElement;
     const width = element.offsetWidth;
-    const height = element.offsetHeight;
+    const height = window.innerHeight;
 
     const customerColor = d3.scaleOrdinal<string>()
     .domain(['customer'])
