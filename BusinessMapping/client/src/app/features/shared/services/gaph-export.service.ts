@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { svgAsPngUri } from 'save-svg-as-png';
 
 @Injectable({
   providedIn: 'root'
@@ -19,5 +20,15 @@ export class GraphExportService {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+  }
+
+  async exportGraphToImage(svgElement: SVGElement): Promise<any> {
+    try {
+      const uri = await svgAsPngUri(svgElement, { scale: 2 });
+      return { src: uri, width: svgElement.clientWidth, height: svgElement.clientHeight };
+    } catch (error) {
+      console.error('Error exporting graph to image:', error);
+      return null;
+    }
   }
 }
