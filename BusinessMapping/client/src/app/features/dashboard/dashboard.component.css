@@ -4,3 +4,9 @@
   gap: 20px;
   padding: 20px;
 }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;  /* Ensures centered alignment of all child content */
+}

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import * as d3 from 'd3';
 import {Customer} from "../../shared/models/Customer";
 import {FormsModule} from "@angular/forms";
@@ -16,7 +16,8 @@ import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation
     FormsModule,
     NgIf
   ],
-  templateUrl: './revenue-overview.component.html'
+  templateUrl: './revenue-overview.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnInit {
 
@@ -75,13 +76,17 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
   }
 
   updateChart(): void {
-    // Clear the existing chart
-    if (this.chartContainer) {
+    const currentWidth = this.chartContainer?.nativeElement.offsetWidth;
+    // @ts-ignore
+    if (this.lastWidth !== currentWidth) {
+      // @ts-ignore
+      this.lastWidth = currentWidth;
+      // @ts-ignore
       d3.select(this.chartContainer.nativeElement).selectAll('*').remove();
-      // Recreate the chart with new dimensions
       this.createChart();
     }
   }
+  
 
   exportGraph(): void {
     const svgElement = this.chartContainer?.nativeElement.querySelector('svg') as SVGElement;
@@ -110,8 +115,8 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
     d3.select(element).selectAll('svg').remove();
 
     const svg = d3.select(element).append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
+      .attr('width', containerWidth)
+      .attr('height', 400)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -163,25 +168,5 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
 
     svg.append("g")
       .call(d3.axisLeft(y));
-
-    const tooltip = d3.select(element).append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
-
-    svg.selectAll(".bar")
-      .on("mouseover", (event, d) => {
-        tooltip.transition()
-          .duration(200)
-          .style("opacity", .9);
-        tooltip.html(`Customer: ${(d as Customer).name} <br> Revenue: €${(d as Customer).revenue.toLocaleString() || 0}`)
-          .style("left", (event.pageX) + "px")
-          .style("top", (event.pageY - 28) + "px");
-      })
-
-      .on("mouseout", function () {
-        tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
-      });
   }
 }
