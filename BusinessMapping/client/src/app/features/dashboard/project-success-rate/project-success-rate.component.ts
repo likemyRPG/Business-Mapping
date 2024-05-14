@@ -145,7 +145,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       .attr("transform", d => `translate(${arc.centroid((d as any))})`)
       .attr("dy", "0.35em")
       .style("text-anchor", "middle")
-      .text(d => `${(d as any).data.type}: ${(d as any).data.value}%`);
+      .text(d => `${(d as any).data.value}%`);
 
     // Add a simple legend
     const legend = svg.selectAll(".legend")

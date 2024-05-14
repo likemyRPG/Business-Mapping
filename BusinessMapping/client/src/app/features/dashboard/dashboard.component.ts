@@ -1,6 +1,7 @@
 import {Component} from '@angular/core';
 import {RevenueOverviewComponent} from "./revenue-overview/revenue-overview.component";
 import {ProjectSuccessRateComponent} from "./project-success-rate/project-success-rate.component";
+import {CustomerDetailsCardComponent} from './customer-details-component/customer-details-component';
 import {CustomerService} from "../shared/services/customer.service";
 import {Customer} from "../shared/models/Customer";
 import {NgClass, NgForOf, NgIf} from "@angular/common";
@@ -30,7 +31,8 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
     CustomerVisualizationComponent,
     SectorRatioComponent,
     FormsModule,
-    NgSelectModule
+    NgSelectModule,
+    CustomerDetailsCardComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -43,10 +45,12 @@ export class DashboardComponent {
   ProjectCustomerRelations: ProjectCustomerRelation[] = [];
   cards = [
     {title: 'Customer Revenue Overview', isLarge: true},
+    {title: 'Customer Info Overview', isLarge: false},
     {title: 'Amount of Customers Per Sector', isLarge: false},
     {title: 'Project Success Rate', isLarge: false},
   ];
   selectedCustomer: 'all' | Customer | null = null;
+  selectedSectors: Sector[] = [];
   customerInput$ = new BehaviorSubject<string>('');
   filteredCustomers$: Observable<any[]> | undefined;
 

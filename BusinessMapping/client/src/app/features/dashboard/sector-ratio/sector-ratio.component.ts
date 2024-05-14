@@ -130,6 +130,8 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
       .attr("stroke", d => d.data.isHighlighted ? 'black' : 'none') // Apply a black stroke to highlighted sectors
       // @ts-ignore
       .attr("stroke-width", d => d.data.isHighlighted ? 2 : 0) // Increase stroke width for visibility
+      // On hover, cursor changes to pointer
+      .style("cursor", "pointer")
       .on("click", (event, d) => {
         // @ts-ignore
         const sector = this.sectors.find(sector => sector.name === d.data.name);
