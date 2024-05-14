@@ -93,7 +93,6 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     const height = 400 - margin.top - margin.bottom;
     const radius = Math.min(width, height) / 2;
 
-    // Clear previous SVG to prevent duplication
     d3.select(this.projectSuccessRateContainer.nativeElement).select("svg").remove();
 
     const svg = d3.select(this.projectSuccessRateContainer.nativeElement)
@@ -197,7 +196,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       const customerProjects = new Set(
         this.projectCustomerRelations
           // @ts-ignore
-          .filter(r => r.customerId === selectedCustomer.uuid)
+          .filter(r => r.customerId === selectedCustomer)
           .map(r => r.projectId)
       );
       // @ts-ignore

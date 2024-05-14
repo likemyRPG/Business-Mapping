@@ -143,7 +143,6 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
           this.selectedSectors.splice(index, 1);
         }
         this.sharedService.emitSectorSelectionChange(this.selectedSectors); // Notify other components
-        console.log(this.selectedSectors);
         this.createPieChart(); // Re-render the chart to update styling
       });
 
