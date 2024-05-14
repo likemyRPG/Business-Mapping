@@ -17,7 +17,7 @@ import { NgSelectModule } from "@ng-select/ng-select";
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { GraphExportService } from '../shared/services/gaph-export.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -60,7 +60,8 @@ export class DashboardComponent implements OnInit {
     private customerService: CustomerService,
     private sharedService: SharedService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private graphExportService: GraphExportService
   ) {}
 
   ngOnInit() {
@@ -116,7 +117,6 @@ export class DashboardComponent implements OnInit {
 
   onChangeCustomer() {
     this.sharedService.changeCustomer(this.selectedCustomer);
-    // Manually trigger change detection
     this.cdr.detectChanges();
   }
 
@@ -126,13 +126,13 @@ export class DashboardComponent implements OnInit {
     } else {
       const selectedSectorIds = new Set(this.selectedSectors.map(sector => sector.uuid));
       this.filteredCustomers = this.customers.filter(customer => 
-        this.CustomerSectorRelationships.some(rel => 
+        this.CustomerSectorRelationships.some(rel =>
           // @ts-ignore
           rel.customerId === customer.uuid && selectedSectorIds.has(rel.sectorId)
         )
       );
     }
-    this.customerInput$.next(this.customerInput$.getValue()); // Trigger the searchCustomers function
+    this.customerInput$.next(this.customerInput$.getValue());
   }
 
   searchCustomers(term: string): Observable<any[]> {
@@ -166,35 +166,101 @@ export class DashboardComponent implements OnInit {
 
   async generatePDF() {
     const doc = new jsPDF();
-    let y = 10;
-    const margin = 10;
+    let y = 20;
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
+    // Add title
+    doc.setFontSize(22);
+    doc.setTextColor(40);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Customer Report', pageWidth / 2, y, { align: 'center' });
+    y += 20;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100);
+
+    doc.text('Customer Details:', margin, y);
+    y += 10;
+    // Add summary text
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'normal');
     if (this.selectedCustomer) {
       doc.text(`Customer: ${this.selectedCustomer.name}`, margin, y);
       y += 10;
+      if (this.selectedCustomer.location) {
+        doc.text(`Location: ${this.selectedCustomer.location}`, margin, y);
+        y += 10;
+      }
+      if (this.selectedCustomer.industry) {
+        doc.text(`Industry: ${this.selectedCustomer.industry}`, margin, y);
+        y += 10;
+      }
+      if (this.selectedCustomer.numberOfEmployees) {
+        doc.text(`Number of Employees: ${this.selectedCustomer.numberOfEmployees}`, margin, y);
+        y += 10;
+      }
+      if (this.selectedCustomer.revenue) {
+        doc.text(`Revenue: €${this.selectedCustomer.revenue}`, margin, y);
+        y += 10;
+      }
     }
 
     if (this.selectedSectors.length > 0) {
       doc.text('Sectors:', margin, y);
       y += 10;
       this.selectedSectors.forEach(sector => {
-        doc.text(`- ${sector.name}`, margin, y);
+        doc.text(`- ${sector.name}`, margin + 10, y);
         y += 10;
       });
     }
 
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100);
+    // Add additional customer-related information
+    y += 10;
+    doc.text('Visual Representation:', margin, y);
+    y += 10;
+
+    // Add a line break between the summary and the graphs
+    y += 10;
+
     // Add SVGs to PDF
     for (let card of this.cards) {
-      const element = document.getElementById(this.generateId(card.title));
+      // Skip "Project Success Rate" card if there are no projects
+      if (card.title === 'Project Success Rate' && this.projects.length === 0) {
+        continue;
+      }
+
+      const elementId = this.generateId(card.title);
+      const element = document.getElementById(elementId);
       if (element) {
-        const canvas = await html2canvas(element);
-        const imgData = canvas.toDataURL('image/png');
-        if (y + canvas.height / 3 > doc.internal.pageSize.height - margin) {
-          doc.addPage();
-          y = margin;
+        const svgElement = element.querySelector('svg');
+        if (svgElement) {
+          const imgData = await this.graphExportService.exportGraphToImage(svgElement);
+          const imgProps = doc.getImageProperties(imgData.src);
+
+          // Reduce the size of the image by increasing the scaling factor
+          let imgWidth = imgProps.width / 8;
+          let imgHeight = imgProps.height / 8;
+
+          if (imgWidth > pageWidth - 2 * margin) {
+            imgWidth = pageWidth - 2 * margin;
+            imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+          }
+
+          if (y + imgHeight > pageHeight - margin) {
+            doc.addPage();
+            y = margin;
+          }
+
+          const x = (pageWidth - imgWidth) / 2; // Center the image horizontally
+          doc.addImage(imgData.src, 'PNG', x, y, imgWidth, imgHeight);
+          y += imgHeight + margin;
         }
-        doc.addImage(imgData, 'PNG', margin, y, canvas.width / 3, canvas.height / 3);
-        y += canvas.height / 3 + margin;
       }
     }
 
