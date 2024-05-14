@@ -12,13 +12,13 @@
                  bindValue="uuid"
                  placeholder="All Customers"
                  [(ngModel)]="selectedCustomer"
-                 (change)="onChangeCustomer()"
+                 (ngModelChange)="onChangeCustomer()"
                  [typeahead]="customerInput$"
                  [clearable]="true"
                  [searchable]="true"
+                 [compareWith]="compareCustomers"
                  class="w-full sm:w-56"
-                  id="customerSelect">
-      >
+                 id="customerSelect">
       </ng-select>
     </div>
 
@@ -33,15 +33,13 @@
           <app-revenue-overview [customers]="customers" [relationships]="CustomerSectorRelationships"></app-revenue-overview>
         </ng-container>
         <ng-container *ngIf="card.title === 'Customer Info Overview'">
-          <app-customer-details-card *ngIf="selectedCustomer" [customers]="customers"></app-customer-details-card>
+          <app-customer-details-card [customers]="customers"></app-customer-details-card>
         </ng-container>
         <ng-container *ngIf="card.title === 'Project Success Rate'">
-          <app-project-success-rate [customers]="customers" [projects]="projects"
-                                    [projectCustomerRelations]="ProjectCustomerRelations" [customerSectorRelations]="CustomerSectorRelationships"></app-project-success-rate>
+          <app-project-success-rate [customers]="customers" [projects]="projects" [projectCustomerRelations]="ProjectCustomerRelations" [customerSectorRelations]="CustomerSectorRelationships"></app-project-success-rate>
         </ng-container>
         <ng-container *ngIf="card.title === 'Amount of Customers Per Sector'">
-          <app-sector-ratio [customers]="customers" [relationships]="CustomerSectorRelationships"
-                            [sectors]="sectors"></app-sector-ratio>
+          <app-sector-ratio [customers]="customers" [relationships]="CustomerSectorRelationships" [sectors]="sectors"></app-sector-ratio>
         </ng-container>
       </div>
     </div>

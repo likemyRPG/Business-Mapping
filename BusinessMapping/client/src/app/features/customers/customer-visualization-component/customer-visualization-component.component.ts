@@ -327,7 +327,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
           this.selectedCustomer = d as unknown as Customer;
         }
         this.selectedNode = d as Customer | Sector | Project | AccountManager | null;
-        console.log(this.selectedNode);
         this.selectedNodeType = d.type.toUpperCase();
         this.updateSidebar();
     });
@@ -377,7 +376,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     const toggleCustomersVisibility = (sectorId: string) => {
       const relatedCustomers = this.customerSectorRelations.filter(r => String(r.sectorId) === sectorId).map(r => String(r.customerId));
-      console.log(relatedCustomers);
       combinedNodes.forEach(node => {
         if (node.type === 'customer' && relatedCustomers.includes(String(node.id))) {
           node.visible = !node.visible;

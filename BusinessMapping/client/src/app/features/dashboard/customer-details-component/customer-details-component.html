@@ -1,17 +1,17 @@
-<!-- Display when customer is set -->
-<div>
-    <div *ngIf="selectedCustomer">
-        <div class="bg-white shadow-lg rounded-lg p-6 transition-shadow hover:shadow-xl">
-            <h3 class="text-2xl font-bold mb-4 text-gray-900">{{ selectedCustomer.name }}</h3>
-            <p class="text-gray-700"><span class="font-semibold text-gray-900">Location:</span> {{ selectedCustomer.location }}</p>
-            <p class="text-gray-700"><span class="font-semibold text-gray-900">Industry:</span> {{ selectedCustomer.industry }}</p>
-            <p class="text-gray-700"><span class="font-semibold text-gray-900">Number of Employees:</span> {{ selectedCustomer.numberOfEmployees }}</p>
-            <p class="text-gray-700"><span class="font-semibold text-gray-900">Revenue:</span> €{{ selectedCustomer.revenue }}</p>
-        </div>
+<!-- customer-details-component.html -->
+<div *ngIf="!isCustomer(selectedCustomer)">
+    <div class="bg-white shadow-lg rounded-lg p-6 transition-shadow hover:shadow-xl">
+      <h3 class="text-2xl font-bold mb-4 text-gray-900">All Customers</h3>
+      <p class="text-gray-700">Select a customer to see the details</p>
     </div>
-    <div *ngIf="!selectedCustomer">
-        <div class="bg-white shadow-lg rounded-lg p-6 transition-shadow hover:shadow-xl">
-            <h3 class="text-2xl font-bold mb-4 text-gray-900">All Customers</h3>
-            <p class="text-gray-700">Select a customer to see the details</p>
-        </div>
-</div>
+  </div>
+  <div *ngIf="isCustomer(selectedCustomer)">
+    <div class="bg-white shadow-lg rounded-lg p-6 transition-shadow hover:shadow-xl">
+      <h3 class="text-2xl font-bold mb-4 text-gray-900">{{ selectedCustomer?.name }}</h3>
+      <p class="text-gray-700"><span class="font-semibold text-gray-900">Location:</span> {{ selectedCustomer?.location }}</p>
+      <p class="text-gray-700"><span class="font-semibold text-gray-900">Industry:</span> {{ selectedCustomer?.industry }}</p>
+      <p class="text-gray-700"><span class="font-semibold text-gray-900">Number of Employees:</span> {{ selectedCustomer?.numberOfEmployees }}</p>
+      <p class="text-gray-700"><span class="font-semibold text-gray-900">Revenue:</span> €{{ selectedCustomer?.revenue }}</p>
+    </div>
+  </div>
+  

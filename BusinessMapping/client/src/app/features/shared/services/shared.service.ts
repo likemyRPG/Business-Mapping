@@ -7,13 +7,11 @@ import {Sector} from "../models/Sector";
   providedIn: 'root'
 })
 export class SharedService {
-  private customerSource = new BehaviorSubject<string>('all');
+  private customerSource = new BehaviorSubject<Customer | "all" | null>(null);
   selectedSectorsSource = new BehaviorSubject<Sector[]>([]);
   currentCustomer = this.customerSource.asObservable();
 
-
-  constructor() {
-  }
+  constructor() { }
 
   changeCustomer(customer: "all" | Customer | null) {
     // @ts-ignore
@@ -22,5 +20,10 @@ export class SharedService {
 
   emitSectorSelectionChange(selectedSectors: Sector[]) {
     this.selectedSectorsSource.next(selectedSectors);
+    this.changeCustomer('all');
+  }
+
+  getCurrentCustomer() {
+    return this.customerSource.getValue();
   }
 }

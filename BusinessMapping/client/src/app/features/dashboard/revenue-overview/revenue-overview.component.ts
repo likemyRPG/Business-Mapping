@@ -29,8 +29,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
   @Input() relationships!: CustomerSectorRelation[];
 
 
-  constructor(private sharedService: SharedService, private exportService: GraphExportService) {
-  }
+  constructor(private sharedService: SharedService, private exportService: GraphExportService) {}
 
   ngOnInit() {
     this.sharedService.currentCustomer.subscribe(customer => {
@@ -133,7 +132,8 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
     const data = filteredCustomers.map(customer => ({
       name: customer.name,
       revenue: +customer.revenue,
-      id: customer.uuid
+      id: customer.uuid,
+      uuid: customer.uuid
     }));
 
 
@@ -151,7 +151,9 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
       .attr("width", x.bandwidth())
       .attr("y", d => y(d.revenue))
       .attr("height", d => height - y(d.revenue))
-      .attr("fill", d => (d as Customer).id === this.selectedCustomer ? '#ccff02' : 'steelblue');  // Highlight selected customer
+      .attr("fill", d => (d as Customer).id === this.selectedCustomer ? '#ccff02' : 'steelblue')  // Highlight selected customer
+      .style("cursor", "pointer")
+      .on('click', (event, d) => this.onCustomerClick(d as Customer));
 
     const labelFrequency = Math.ceil(data.length / 20);
 
@@ -168,5 +170,16 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
 
     svg.append("g")
       .call(d3.axisLeft(y));
+  }
+
+  onCustomerClick(customer: Customer): void {
+    // @ts-ignore
+    if (this.selectedCustomer === customer.uuid) {
+      this.sharedService.changeCustomer('all');
+    }
+    else {
+      // @ts-ignore
+      this.sharedService.changeCustomer(customer.uuid);
+    }
   }
 }
