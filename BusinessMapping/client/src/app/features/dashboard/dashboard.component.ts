@@ -1,10 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { CommonModule, NgClass, NgForOf, NgIf } from '@angular/common';
 import { RevenueOverviewComponent } from "./revenue-overview/revenue-overview.component";
 import { ProjectSuccessRateComponent } from "./project-success-rate/project-success-rate.component";
 import { CustomerDetailsCardComponent } from './customer-details-component/customer-details-component';
 import { CustomerService } from "../shared/services/customer.service";
 import { Customer } from "../shared/models/Customer";
-import { NgClass, NgForOf, NgIf, NgStyle } from "@angular/common";
 import { CustomerVisualizationComponent } from "../customers/customer-visualization-component/customer-visualization-component.component";
 import { SectorRatioComponent } from "./sector-ratio/sector-ratio.component";
 import { Sector } from "../shared/models/Sector";
@@ -16,11 +16,14 @@ import { SharedService } from "../shared/services/shared.service";
 import { NgSelectModule } from "@ng-select/ng-select";
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of } from 'rxjs';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
+    CommonModule,
     RevenueOverviewComponent,
     ProjectSuccessRateComponent,
     NgForOf,
@@ -30,8 +33,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
     SectorRatioComponent,
     FormsModule,
     NgSelectModule,
-    CustomerDetailsCardComponent,
-    NgStyle
+    CustomerDetailsCardComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
@@ -156,5 +158,47 @@ export class DashboardComponent implements OnInit {
     this.selectedSectors = this.selectedSectors.filter(s => s.uuid !== sector.uuid);
     this.sharedService.selectedSectorsSource.next(this.selectedSectors);
     this.filterCustomersBySectors();
+  }
+
+  generateId(title: string): string {
+    return title.replace(/\s+/g, '-').toLowerCase();
+  }
+
+  async generatePDF() {
+    const doc = new jsPDF();
+    let y = 10;
+    const margin = 10;
+
+    if (this.selectedCustomer) {
+      doc.text(`Customer: ${this.selectedCustomer.name}`, margin, y);
+      y += 10;
+    }
+
+    if (this.selectedSectors.length > 0) {
+      doc.text('Sectors:', margin, y);
+      y += 10;
+      this.selectedSectors.forEach(sector => {
+        doc.text(`- ${sector.name}`, margin, y);
+        y += 10;
+      });
+    }
+
+    // Add SVGs to PDF
+    for (let card of this.cards) {
+      const element = document.getElementById(this.generateId(card.title));
+      if (element) {
+        const canvas = await html2canvas(element);
+        const imgData = canvas.toDataURL('image/png');
+        if (y + canvas.height / 3 > doc.internal.pageSize.height - margin) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.addImage(imgData, 'PNG', margin, y, canvas.width / 3, canvas.height / 3);
+        y += canvas.height / 3 + margin;
+      }
+    }
+
+    const reportName = `Customer_Report_${this.selectedCustomer ? this.selectedCustomer.name : 'All_Customers'}_${new Date().toISOString().slice(0, 10)}.pdf`;
+    doc.save(reportName);
   }
 }

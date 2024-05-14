@@ -34,10 +34,16 @@
           <button (click)="removeSector(sector)" class="ml-2 text-red-600 font-bold">x</button>
         </div>
       </div>
-      <button [ngStyle]="{'visibility': (selectedCustomer || selectedSectors.length > 0) ? 'visible' : 'hidden'}"
-              (click)="resetSelections()" class="mt-4 sm:mt-0 bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">
-        Reset Selections
-      </button>
+      <div class="flex gap-4">
+        <button [style.visibility]="(selectedCustomer || selectedSectors.length > 0) ? 'visible' : 'hidden'"
+                (click)="resetSelections()" class="mt-4 sm:mt-0 bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">
+          Reset Selections
+        </button>
+        <button [style.visibility]="(selectedCustomer || selectedSectors.length > 0) ? 'visible' : 'hidden'"
+                (click)="generatePDF()" class="mt-4 sm:mt-0 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition">
+          Generate Report
+        </button>
+      </div>
     </div>
 
     <!-- Cards Section -->
@@ -45,7 +51,8 @@
       <!-- Dynamic Card Generation -->
       <div *ngFor="let card of cards"
            [ngClass]="{'lg:col-span-2': card.isLarge, 'lg:col-span-1': !card.isLarge}"
-           class="bg-white shadow-lg rounded-lg p-6 transition-shadow hover:shadow-xl">
+           class="bg-white shadow-lg rounded-lg p-6 transition-shadow hover:shadow-xl"
+           [attr.id]="generateId(card.title)">
         <div class="mb-4 font-bold text-xl">{{ card.title }}</div>
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
           <app-revenue-overview [customers]="customers" [relationships]="CustomerSectorRelationships"></app-revenue-overview>
