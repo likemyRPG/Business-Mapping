@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { RevenueOverviewComponent } from "./revenue-overview/revenue-overview.component";
 import { ProjectSuccessRateComponent } from "./project-success-rate/project-success-rate.component";
 import { CustomerDetailsCardComponent } from './customer-details-component/customer-details-component';
@@ -56,7 +56,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private customerService: CustomerService,
     private sharedService: SharedService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
@@ -72,18 +73,19 @@ export class DashboardComponent implements OnInit {
 
       // Subscribe to changes in the shared service to update selectedCustomer
       this.sharedService.currentCustomer.subscribe(customer => {
-        const foundCustomer = customer ? this.customers.find(c => c.uuid === customer) || null : null;
-        this.selectedCustomer = foundCustomer;
-        console.log('Selected customer dashboard: ', foundCustomer);
-        
-        // Manually trigger change detection
-        this.cdr.detectChanges();
+        this.ngZone.run(() => {
+          const foundCustomer = customer ? this.customers.find(c => c.uuid === customer) || null : null;
+          this.selectedCustomer = foundCustomer;
+          this.cdr.detectChanges();
+        });
       });
 
       // Initial selection setup if needed
       const initialCustomer = this.sharedService.getCurrentCustomer(); // Assuming a method to get initial value
-      this.selectedCustomer = initialCustomer ? this.customers.find(c => c.uuid === initialCustomer) || null : null;
-      this.cdr.detectChanges();
+      this.ngZone.run(() => {
+        this.selectedCustomer = initialCustomer ? this.customers.find(c => c.uuid === initialCustomer) || null : null;
+        this.cdr.detectChanges();
+      });
     });
 
     this.customerService.getAllSectors().subscribe((data: Sector[]) => {
@@ -111,6 +113,8 @@ export class DashboardComponent implements OnInit {
 
   onChangeCustomer() {
     this.sharedService.changeCustomer(this.selectedCustomer);
+    // Manually trigger change detection
+    this.cdr.detectChanges();
   }
 
   filterCustomersBySectors() {
