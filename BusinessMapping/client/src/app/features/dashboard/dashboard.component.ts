@@ -4,7 +4,7 @@ import { ProjectSuccessRateComponent } from "./project-success-rate/project-succ
 import { CustomerDetailsCardComponent } from './customer-details-component/customer-details-component';
 import { CustomerService } from "../shared/services/customer.service";
 import { Customer } from "../shared/models/Customer";
-import { NgClass, NgForOf, NgIf } from "@angular/common";
+import { NgClass, NgForOf, NgIf, NgStyle } from "@angular/common";
 import { CustomerVisualizationComponent } from "../customers/customer-visualization-component/customer-visualization-component.component";
 import { SectorRatioComponent } from "./sector-ratio/sector-ratio.component";
 import { Sector } from "../shared/models/Sector";
@@ -30,7 +30,8 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
     SectorRatioComponent,
     FormsModule,
     NgSelectModule,
-    CustomerDetailsCardComponent
+    CustomerDetailsCardComponent,
+    NgStyle
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
@@ -141,5 +142,19 @@ export class DashboardComponent implements OnInit {
 
   compareCustomers(c1: Customer, c2: Customer): boolean {
     return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
+  }
+
+  resetSelections() {
+    this.selectedCustomer = null;
+    this.selectedSectors = [];
+    this.sharedService.changeCustomer(null);
+    this.sharedService.selectedSectorsSource.next([]);
+    this.cdr.detectChanges();
+  }
+
+  removeSector(sector: Sector) {
+    this.selectedSectors = this.selectedSectors.filter(s => s.uuid !== sector.uuid);
+    this.sharedService.selectedSectorsSource.next(this.selectedSectors);
+    this.filterCustomersBySectors();
   }
 }
