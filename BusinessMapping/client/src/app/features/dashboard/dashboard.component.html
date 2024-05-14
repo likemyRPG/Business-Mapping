@@ -32,6 +32,9 @@
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
           <app-revenue-overview [customers]="customers" [relationships]="CustomerSectorRelationships"></app-revenue-overview>
         </ng-container>
+        <ng-container *ngIf="card.title === 'Customer Info Overview'">
+          <app-customer-details-card *ngIf="selectedCustomer" [customers]="customers"></app-customer-details-card>
+        </ng-container>
         <ng-container *ngIf="card.title === 'Project Success Rate'">
           <app-project-success-rate [customers]="customers" [projects]="projects"
                                     [projectCustomerRelations]="ProjectCustomerRelations" [customerSectorRelations]="CustomerSectorRelationships"></app-project-success-rate>

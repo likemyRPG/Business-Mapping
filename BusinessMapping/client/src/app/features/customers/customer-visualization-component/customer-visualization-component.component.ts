@@ -13,11 +13,12 @@ import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation
 import {Sector} from "../../shared/models/Sector";
 import * as d3 from 'd3';
 import {SimulationNodeDatum} from 'd3';
-import {DatePipe, DecimalPipe, NgClass, NgIf} from "@angular/common";
+import {CommonModule, DatePipe, DecimalPipe, NgClass, NgIf} from "@angular/common";
 import {Project} from "../../shared/models/Project";
 import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelation";
 import {AccountManagerSectorRelation} from "../../shared/models/AccountManagerSectorRelation";
 import {AccountManager} from "../../shared/models/AccountManager";
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-customer-visualization-component',
@@ -26,7 +27,9 @@ import {AccountManager} from "../../shared/models/AccountManager";
     NgIf,
     NgClass,
     DecimalPipe,
-    DatePipe
+    DatePipe,
+    FormsModule,
+    CommonModule
   ],
   templateUrl: './customer-visualization-component.component.html',
   styleUrl: './customer-visualization-component.component.css'
@@ -40,12 +43,16 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   @Input() sectors!: Sector[];
   @Input() projects!: Project[];
   @Input() accountManagers!: AccountManager[];
+
   selectedCustomer: Customer | null = null;
   selectedNode: Customer | Sector | Project | AccountManager | null = null;
   selectedNodeType: string = '';
+  searchTerm: string = '';
+
   protected sidebarExpanded: boolean = true;
   private simulation!: d3.Simulation<d3.SimulationNodeDatum, undefined>;
   private zoomBehavior: any;
+  private svg!: d3.Selection<SVGGElement, unknown, null, undefined>;
 
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
@@ -80,6 +87,46 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     }
   }
 
+  filterNodes(): void {
+    const term = this.searchTerm.toLowerCase();
+    // @ts-ignore
+    if (!this.nodes) {
+      console.error("Nodes array is undefined or not initialized.");
+      return;
+    }
+  
+    // @ts-ignore
+    this.nodes.forEach(node => {
+      // If node name matches the search term, ensure it is visible and highlighted
+      if (node.name.toLowerCase().includes(term)) {
+        node.visible = true; // Make sure the node is visible
+        node.highlighted = true; // Highlight this node
+      } else {
+        // If not a match and no search term is set, reset the highlight without changing visibility
+        if (term === '') {
+          node.highlighted = false; // Only remove highlighting if there is no search term
+        } else {
+          // If there is a search term and the node does not match, do not change its visibility
+          node.highlighted = false;
+        }
+      }
+    });
+  
+    this.updateNodeStyles(); // Apply styles based on changes to visibility and highlight state
+  }
+
+  updateNodeStyles(): void {
+    this.svg.selectAll(".node circle")
+    // @ts-ignore
+      .style("display", d => d.visible ? "block" : "none") // Control visibility based on 'visible' property
+    // @ts-ignore
+      .attr("stroke", d => d.highlighted ? "yellow" : "none") // Apply highlighting
+    // @ts-ignore
+      .attr("stroke-width", d => d.highlighted ? 2 : 0);
+  }
+  
+  
+
   createChart(): void {
     if (!this.customers || !this.sectors || !this.chartContainer || !this.customerSectorRelations || !this.projects || !this.projectCustomerRelations || !this.accountManagers || !this.accountManagerSectorRelations) {
       return;
@@ -87,7 +134,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     const element = this.chartContainer.nativeElement;
     const width = element.offsetWidth;
-    const height = window.innerHeight;
+    const height = element.offsetHeight;
 
     const customerColor = d3.scaleOrdinal<string>()
     .domain(['customer'])
@@ -112,13 +159,13 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     this.zoomBehavior = d3.zoom()
       .scaleExtent([0.1, 10])
       .on("zoom", (event) => {
-        svg.attr("transform", event.transform)
-        svg.selectAll("text").style("display", function () {
+        this.svg.attr("transform", event.transform)
+        this.svg.selectAll("text").style("display", function () {
           return event.transform.k > .3 ? "block" : "none";
         });
       });
 
-    const svg = d3.select(element).append('svg')
+    this.svg = d3.select(element).append('svg')
       .attr('width', width)
       .attr('height', height)
       .attr('viewBox', `0 0 ${width} ${height}`)
@@ -126,11 +173,15 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .call(this.zoomBehavior)
       .append('g');
 
-    svg.append("rect")
+    this.svg.append("rect")
       .attr("width", width)
       .attr("height", height)
       .style("fill", "none")
       .style("pointer-events", "all");
+
+    if (this.searchTerm) {
+      this.filterNodes();
+    }
 
     let sectorRevenues: Record<string, number> = {};
 
@@ -194,6 +245,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       year?: number;
       status?: string;
       startDate?: string;
+      highlighted: boolean; // Added to track if the node is highlighted
     }
 
     const combinedNodes: VisualizationNode[] = [
@@ -232,6 +284,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         onTime: project.onTime,
         actualCost: project.actualCost,
         impact: project.impact,
+        highlighted: false
       } as VisualizationNode)),
 
       ...this.accountManagers.map(accountManager => ({
@@ -243,13 +296,16 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       } as VisualizationNode))
     ];
 
+    // @ts-ignore
+    this.nodes = combinedNodes; 
+
     const links = [
       ...this.customerSectorRelations.map(r => ({source: r.customerId, target: r.sectorId})),
       ...this.projectCustomerRelations.map(r => ({source: r.customerId, target: r.projectId})),
       ...this.accountManagerSectorRelations.map(r => ({source: r.accountManagerId, target: r.sectorId}))
     ];
 
-    const link = svg.append("g")
+    const link = this.svg.append("g")
       .attr("class", "links")
       .selectAll("line")
       .data(links)
@@ -257,7 +313,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .attr("stroke-width", 1)
       .style("stroke", "#999");
 
-      const node = svg.selectAll<SVGGElement, VisualizationNode>(".node")
+      const node = this.svg.selectAll<SVGGElement, VisualizationNode>(".node")
       .data(combinedNodes)
       .enter().append("g")
       .attr("class", "node")
@@ -327,7 +383,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
           node.visible = !node.visible;
         }
       });
-      svg.selectAll(".node")
+      this.svg.selectAll(".node")
         .style("display", d => (d as any).visible ? "block" : "none");
       updateLinkVisibility();
     };
@@ -339,7 +395,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
           node.visible = !node.visible;
         }
       });
-      svg.selectAll(".node")
+      this.svg.selectAll(".node")
         .style("display", d => (d as any).visible ? "block" : "none");
       updateLinkVisibility();
     }
@@ -386,7 +442,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     node.call(drag as any);
 
-    const legend = svg.append("g")
+    const legend = this.svg.append("g")
       .attr("class", "legend")
       .attr("transform", "translate(20,20)")
       .style("pointer-events", "none");

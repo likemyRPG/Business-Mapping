@@ -1,4 +1,8 @@
 <div class="flex h-screen overflow-hidden relative">
+  <div [ngStyle]="{'right': sidebarExpanded ? '18rem' : '0', 'width': sidebarExpanded ? 'calc(100% - 18rem)' : '100%'}"
+    class="absolute top-0 p-4 z-10">
+  <input [(ngModel)]="searchTerm" (input)="filterNodes()" placeholder="Search nodes..." class="w-full p-2 rounded border shadow">
+  </div>
   <div class="flex-1 bg-white">
     <div #chart class="chart-container flex-grow bg-white"></div>
   </div>
