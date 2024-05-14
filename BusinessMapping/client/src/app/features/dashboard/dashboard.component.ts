@@ -37,6 +37,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 })
 export class DashboardComponent implements OnInit {
   customers: Customer[] = [];
+  filteredCustomers: Customer[] = [];
   sectors: Sector[] = [];
   projects: Project[] = [];
   CustomerSectorRelationships: CustomerSectorRelation[] = [];
@@ -67,6 +68,7 @@ export class DashboardComponent implements OnInit {
 
     this.customerService.getAllCustomers().subscribe((data: Customer[]) => {
       this.customers = data;
+      this.filteredCustomers = data;
 
       // Subscribe to changes in the shared service to update selectedCustomer
       this.sharedService.currentCustomer.subscribe(customer => {
@@ -99,17 +101,38 @@ export class DashboardComponent implements OnInit {
     this.customerService.getAllProjectCustomerRelations().subscribe((data: Object) => {
       this.ProjectCustomerRelations = data as ProjectCustomerRelation[];
     });
+
+    // Listen for sector changes
+    this.sharedService.selectedSectorsSource.subscribe(selectedSectors => {
+      this.selectedSectors = selectedSectors;
+      this.filterCustomersBySectors();
+    });
   }
 
   onChangeCustomer() {
     this.sharedService.changeCustomer(this.selectedCustomer);
   }
 
+  filterCustomersBySectors() {
+    if (this.selectedSectors.length === 0) {
+      this.filteredCustomers = this.customers;
+    } else {
+      const selectedSectorIds = new Set(this.selectedSectors.map(sector => sector.uuid));
+      this.filteredCustomers = this.customers.filter(customer => 
+        this.CustomerSectorRelationships.some(rel => 
+          // @ts-ignore
+          rel.customerId === customer.uuid && selectedSectorIds.has(rel.sectorId)
+        )
+      );
+    }
+    this.customerInput$.next(this.customerInput$.getValue()); // Trigger the searchCustomers function
+  }
+
   searchCustomers(term: string): Observable<any[]> {
     if (term === '') {
-      return of(this.customers);
+      return of(this.filteredCustomers);
     }
-    return of(this.customers.filter(customer => customer.name.toLowerCase().includes(term.toLowerCase())));
+    return of(this.filteredCustomers.filter(customer => customer.name.toLowerCase().includes(term.toLowerCase())));
   }
 
   compareCustomers(c1: Customer, c2: Customer): boolean {
