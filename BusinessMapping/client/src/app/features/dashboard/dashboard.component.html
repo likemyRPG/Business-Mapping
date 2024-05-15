@@ -58,8 +58,12 @@
           Reset Selections
         </button>
         <button [style.visibility]="(selectedCustomer || selectedSectors.length > 0) ? 'visible' : 'hidden'"
-                (click)="generatePDF()" class="mt-4 sm:mt-0 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition">
-          Generate Report
+                (click)="generatePDF()" class="mt-4 sm:mt-0 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition"
+                [disabled]="isLoading">
+          <ng-container *ngIf="!isLoading">Generate Report</ng-container>
+          <ng-container *ngIf="isLoading">
+            <i class="fas fa-spinner fa-spin"></i> Generating...
+          </ng-container>
         </button>
       </div>
     </div>

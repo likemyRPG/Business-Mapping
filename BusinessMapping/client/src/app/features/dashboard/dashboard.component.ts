@@ -59,6 +59,7 @@ export class DashboardComponent implements OnInit {
   filteredSectors$: Observable<any[]> | undefined;
   convertedSectorIdsToObjects: Sector[] = [];
   selectedColorScheme: string = 'schemeSet2'; // Default color scheme
+  isLoading: boolean = false; // Loading state for report generation
 
   colorSchemes = [
     { label: 'Category 10', scheme: 'schemeCategory10' },
@@ -216,6 +217,8 @@ export class DashboardComponent implements OnInit {
   }
 
   async generatePDF() {
+    this.isLoading = true; // Set loading state to true
+
     const doc = new jsPDF();
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -338,5 +341,7 @@ export class DashboardComponent implements OnInit {
   
     addFooter();
     doc.save(reportName);
+
+    this.isLoading = false; // Reset loading state
   }
 }
