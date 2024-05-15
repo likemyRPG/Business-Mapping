@@ -4,36 +4,40 @@
     <!-- Header -->
     <div class="text-4xl font-bold text-gray-900 mb-6" i18n="@@siteDashboardHeader">Dashboard</div>
 
-    <!-- Select Dropdown for Customer Selection - Default: All Customers -->
+    <!-- Selection Dropdowns -->
     <div class="flex flex-col sm:flex-row items-center gap-4 mb-6">
-      <label for="customerSelect" class="font-medium text-gray-900">Select a Customer:</label>
-      <ng-select [items]="filteredCustomers"
-                 bindLabel="name"
-                 bindValue="uuid"
-                 placeholder="All Customers"
-                 [(ngModel)]="selectedCustomer"
-                 (ngModelChange)="onChangeCustomer()"
-                 [typeahead]="customerInput$"
-                 [clearable]="true"
-                 [searchable]="true"
-                 [compareWith]="compareCustomers"
-                 class="w-full sm:w-56"
-                 id="customerSelect">
-      </ng-select>
-    </div>
-
-    <!-- Select Dropdown for Color Scheme -->
-    <div class="flex flex-col sm:flex-row items-center gap-4 mb-6">
-      <label for="colorSchemeSelect" class="font-medium text-gray-900">Select a Color Scheme:</label>
-      <ng-select [items]="colorSchemes"
-                 bindLabel="label"
-                 bindValue="scheme"
-                 placeholder="Select Color Scheme"
-                 [(ngModel)]="selectedColorScheme"
-                 (ngModelChange)="onColorSchemeChange()"
-                 class="w-full sm:w-56"
-                 id="colorSchemeSelect">
-      </ng-select>
+      <!-- Select Dropdown for Customer Selection - Default: All Customers -->
+      <div class="flex flex-col sm:flex-row items-center gap-4">
+        <label for="customerSelect" class="font-medium text-gray-900">Customer:</label>
+        <ng-select [items]="filteredCustomers"
+                   bindLabel="name"
+                   bindValue="uuid"
+                   placeholder="All Customers"
+                   [(ngModel)]="selectedCustomer"
+                   (ngModelChange)="onChangeCustomer()"
+                   [typeahead]="customerInput$"
+                   [clearable]="true"
+                   [searchable]="true"
+                   [compareWith]="compareCustomers"
+                   class="w-full sm:w-56"
+                   id="customerSelect">
+        </ng-select>
+      </div>
+      
+      <!-- Select Dropdown for Color Scheme -->
+      <div class="flex flex-col sm:flex-row items-center gap-4">
+        <label for="colorSchemeSelect" class="font-medium text-gray-900">Color Scheme:</label>
+        <ng-select [items]="colorSchemes"
+                   bindLabel="label"
+                   bindValue="scheme"
+                   placeholder="Select Color Scheme"
+                   [(ngModel)]="selectedColorScheme"
+                   (ngModelChange)="onColorSchemeChange()"
+                   [clearable]="false"
+                   class="w-full sm:w-56"
+                   id="colorSchemeSelect">
+        </ng-select>
+      </div>
     </div>
 
     <!-- Selections Display and Reset Button -->
