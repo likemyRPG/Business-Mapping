@@ -25,6 +25,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   @Input() projectCustomerRelations!: ProjectCustomerRelation[];
   @Input() projects!: Project[];
   @Input() customerSectorRelations!: CustomerSectorRelation[];
+  @Input() colorScheme: string = 'schemeSet2';
   selectedCustomer: 'all' | Customer | null = null;
 
   @ViewChild('projectSuccessRateContainer', { static: true }) projectSuccessRateContainer!: ElementRef;
@@ -41,6 +42,11 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     this.sharedService.selectedSectorsSource.subscribe(selectedSectors => {
       this.selectedSectors = selectedSectors;
       this.updateData();
+    });
+
+    this.sharedService.colorScheme.subscribe(scheme => {
+      this.colorScheme = scheme;
+      this.updateData(); // Update the chart with the new color scheme
     });
   }
 
@@ -99,7 +105,8 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const color = d3.scaleOrdinal(["#4CAF50", "#F44336"]);
+    // @ts-ignore
+    const color = d3.scaleOrdinal(d3[this.colorScheme]);
 
     const arc = d3.arc()
       .outerRadius(radius - 10)
@@ -133,7 +140,10 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     arcs.append("path")
     // @ts-ignore
       .attr("d", arc)
-      .style("fill", d => color((d as any).data.type));
+      // @ts-ignore
+      .attr("fill", (d: any) => color((d as any).data.type))
+      // .attr("stroke", "black")
+      .attr("stroke-width", 2);
 
     arcs.append("text")
       .filter(d => (d as any).data.value > 0) // Hide text if the value is 0
@@ -153,7 +163,8 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       .attr("x", 0)
       .attr("width", 18)
       .attr("height", 18)
-      .style("fill", d => color(d.type));
+      // @ts-ignore
+      .style("fill", d => color(d.type) as string); // Ensure the correct type here
 
     legend.append("text")
       .attr("x", 24)

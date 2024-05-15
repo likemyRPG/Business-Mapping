@@ -58,7 +58,7 @@ export class DashboardComponent implements OnInit {
   filteredCustomers$: Observable<any[]> | undefined;
   filteredSectors$: Observable<any[]> | undefined;
   convertedSectorIdsToObjects: Sector[] = [];
-  selectedColorScheme: string = 'schemeCategory10'; // Default color scheme
+  selectedColorScheme: string = 'schemeSet2'; // Default color scheme
 
   colorSchemes = [
     { label: 'Category 10', scheme: 'schemeCategory10' },

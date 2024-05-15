@@ -17,7 +17,7 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
   @Input() customers!: Customer[];
   @Input() sectors!: Sector[];
   @Input() relationships!: CustomerSectorRelation[];
-  @Input() colorScheme: string = 'schemeCategory10';
+  @Input() colorScheme: string = 'schemeSet2';
 
   @ViewChild('pieChartContainer') pieChartContainer!: ElementRef;
 
