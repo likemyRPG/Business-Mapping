@@ -1,10 +1,12 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
-import {Customer} from "../../shared/models/Customer";
-import {Sector} from '../../shared/models/Sector';
-import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
+// @ts-nocheck
+
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { Customer } from "../../shared/models/Customer";
+import { Sector } from '../../shared/models/Sector';
+import { CustomerSectorRelation } from "../../shared/models/CustomerSectorRelation";
 import * as d3 from 'd3';
-import {SharedService} from "../../shared/services/shared.service";
-import {GraphExportService} from "../../shared/services/gaph-export.service";
+import { SharedService } from "../../shared/services/shared.service";
+import { GraphExportService } from "../../shared/services/gaph-export.service";
 
 @Component({
   selector: 'app-sector-ratio',
@@ -24,12 +26,10 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
   selectedCustomer: 'all' | Customer | null = null;
   selectedSectors: Sector[] = [];
 
-  constructor(private sharedService: SharedService, private exportService: GraphExportService) {
-  }
+  constructor(private sharedService: SharedService, private exportService: GraphExportService) {}
 
   ngOnInit() {
     this.sharedService.currentCustomer.subscribe(customer => {
-      // @ts-ignore
       this.selectedCustomer = customer;
       this.updateData(); // Method to update data based on selected customer
     });
@@ -38,17 +38,22 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
       this.colorScheme = scheme;
       this.updateData(); // Update the chart with the new color scheme
     });
-  }
 
-  updateData() {
-    if (this.customers && this.pieChartContainer) {
-      this.createPieChart();
-    }
+    this.sharedService.selectedSectorsSource.subscribe(sectors => {
+      this.selectedSectors = sectors;
+      this.updateData();
+    });
   }
 
   ngAfterViewInit(): void {
     this.createPieChart();
     this.addResizeListener();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.pieChartContainer) {
+      this.updateData();
+    }
   }
 
   addResizeListener(): void {
@@ -62,8 +67,8 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (this.pieChartContainer) {
+  updateData() {
+    if (this.customers && this.pieChartContainer) {
       this.createPieChart();
     }
   }
@@ -71,7 +76,6 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
   exportGraph(): void {
     const svgElement = this.pieChartContainer?.nativeElement.querySelector('svg') as SVGElement;
     if (svgElement) {
-      // @ts-ignore
       this.exportService.exportGraph(svgElement, 'revenue-overview.svg');
     }
   }
@@ -82,18 +86,11 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
       return acc;
     }, {} as Record<string, number>);
 
-    console.log(this.selectedCustomer);
-
-    // @ts-ignore
     const isAllCustomers = this.selectedCustomer === 'all';
 
-    // Highlight the sector of the selected customer
-    console.log(this.selectedCustomer);
-    console.log(this.customers);
     const data = this.sectors.map(sector => {
       const isHighlighted = (!isAllCustomers && this.relationships.some(relation =>
-        // @ts-ignore
-        relation.sectorId === sector.uuid && relation.customerId === this.selectedCustomer
+        relation.sectorId === sector.uuid && relation.customerId === (this.selectedCustomer as Customer)?.uuid
       )) || this.selectedSectors.some(selectedSector => selectedSector.uuid === sector.uuid);
       return {
         name: sector.name,
@@ -102,17 +99,13 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
       };
     }).filter(sector => sector.count > 0);
 
-
-    // Setup dimensions and radius of the pie chart
     const element = this.pieChartContainer.nativeElement;
     const width = element.offsetWidth;
     const height = window.innerHeight * 0.5;
     const radius = Math.min(width, height) / 2;
 
-    // @ts-ignore
     const baseColor = d3.scaleOrdinal(d3[this.colorScheme]);
 
-    // Clear previous SVG to prevent duplication
     d3.select(this.pieChartContainer.nativeElement).select("svg").remove();
 
     const svg = d3.select(this.pieChartContainer.nativeElement)
@@ -127,7 +120,6 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
     const label = d3.arc().outerRadius(radius * 0.7).innerRadius(radius * 0.7);
 
     const arc = svg.selectAll(".arc")
-      // @ts-ignore
       .data(pie(data))
       .enter().append("g")
       .attr("class", "arc");
@@ -137,40 +129,33 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
       .attr("fill", (d: any) => {
         const baseFill = baseColor(d.data.name);
         const opacity = d.data.isHighlighted ? 1 : 0.5;
-        // @ts-ignore
         return d3.color(baseFill).brighter(1 - opacity).toString();
-      })      
-      // @ts-ignore
-      .attr("stroke", d => d.data.isHighlighted ? 'black' : 'none') // Apply a black stroke to highlighted sectors
-      // @ts-ignore
-      .attr("stroke-width", d => d.data.isHighlighted ? 2 : 0) // Increase stroke width for visibility
-      // On hover, cursor changes to pointer
+      })
+      .attr("stroke", d => d.data.isHighlighted ? 'black' : 'none')
+      .attr("stroke-width", d => d.data.isHighlighted ? 2 : 0)
       .style("cursor", "pointer")
       .on("click", (event, d) => {
-        // @ts-ignore
         const sector = this.sectors.find(sector => sector.name === d.data.name);
-        // @ts-ignore
-        const index = this.selectedSectors.findIndex(selectedSector => selectedSector.uuid === sector.uuid);
+        const index = this.selectedSectors.findIndex(selectedSector => selectedSector.uuid === sector?.uuid);
         if (index === -1) {
-          this.selectedSectors.push((sector as Sector));
+          this.selectedSectors.push(sector as Sector);
         } else {
           this.selectedSectors.splice(index, 1);
         }
-        this.sharedService.emitSectorSelectionChange(this.selectedSectors); // Notify other components
-        this.createPieChart(); // Re-render the chart to update styling
+        this.sharedService.emitSectorSelectionChange(this.selectedSectors);
+        this.createPieChart();
       });
 
     arc.append("text")
       .attr("transform", (d: any) => `translate(${label.centroid(d)})`)
-      .attr("text-anchor", "middle") // Center the text
+      .attr("text-anchor", "middle")
       .each(function (d) {
         const node = d3.select(this);
-        // @ts-ignore
-        const lines = [d.data.name, `(${d.data.count})`]; // Split name and count into two lines
+        const lines = [d.data.name, `(${d.data.count})`];
         lines.forEach((line, index) => {
           node.append("tspan")
-            .attr("x", 0) // Keep the tspan aligned
-            .attr("dy", index === 0 ? "-0.6em" : "1.2em") // Move the first line up and the second line down
+            .attr("x", 0)
+            .attr("dy", index === 0 ? "-0.6em" : "1.2em")
             .text(line);
         });
       });

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule, NgClass, NgForOf, NgIf } from '@angular/common';
 import { RevenueOverviewComponent } from "./revenue-overview/revenue-overview.component";
@@ -10,10 +12,10 @@ import { SectorRatioComponent } from "./sector-ratio/sector-ratio.component";
 import { Sector } from "../shared/models/Sector";
 import { CustomerSectorRelation } from "../shared/models/CustomerSectorRelation";
 import { Project } from "../shared/models/Project";
-import { ProjectCustomerRelation } from "../shared/models/ProjectCustomerRelation";
-import { FormsModule } from "@angular/forms";
-import { SharedService } from "../shared/services/shared.service";
-import { NgSelectModule } from "@ng-select/ng-select";
+import { ProjectCustomerRelation } from '../shared/models/ProjectCustomerRelation';
+import { FormsModule } from '@angular/forms';
+import { SharedService } from '../shared/services/shared.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import jsPDF from 'jspdf';
@@ -57,7 +59,6 @@ export class DashboardComponent implements OnInit {
   sectorInput$ = new BehaviorSubject<string>('');
   filteredCustomers$: Observable<any[]> | undefined;
   filteredSectors$: Observable<any[]> | undefined;
-  convertedSectorIdsToObjects: Sector[] = [];
   selectedColorScheme: string = 'schemeSet2'; // Default color scheme
   isLoading: boolean = false; // Loading state for report generation
 
@@ -134,8 +135,12 @@ export class DashboardComponent implements OnInit {
 
     // Listen for sector changes
     this.sharedService.selectedSectorsSource.subscribe(selectedSectors => {
-      this.selectedSectors = selectedSectors;
-      this.filterCustomersBySectors();
+      this.ngZone.run(() => {
+        console.log('Selected sectors:', selectedSectors);
+        this.selectedSectors = selectedSectors.map(sectorId => this.sectors.find(sector => sector.uuid === sectorId) || sectorId);
+        this.filterCustomersBySectors();
+        this.cdr.detectChanges();
+      });
       console.log('Selected sectors:', this.selectedSectors);
     });
   }
@@ -145,16 +150,15 @@ export class DashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  onChangeSector() {
-    // @ts-ignore
-    this.convertedSectorIdsToObjects = this.selectedSectors.map(sectorId => this.sectors.find(sector => sector.uuid === sectorId));
-    this.sharedService.selectedSectorsSource.next(this.convertedSectorIdsToObjects);
+  onChangeSector(sectors: Sector[]) {
+    // Ensure that selectedSectors are properly updated
+    this.selectedSectors = sectors.map(sectorId => this.sectors.find(sector => sector.uuid === sectorId) || sectorId);
+    this.sharedService.selectedSectorsSource.next(this.selectedSectors);
     this.filterCustomersBySectors();
     this.cdr.detectChanges();
   }
 
   onColorSchemeChange() {
-    // @ts-ignore
     this.sharedService.changeColorScheme(this.selectedColorScheme);
     this.cdr.detectChanges();
   }
@@ -206,10 +210,9 @@ export class DashboardComponent implements OnInit {
 
   removeSector(sector: Sector) {
     this.selectedSectors = this.selectedSectors.filter(s => s.uuid !== sector.uuid);
-    // @ts-ignore
-    this.convertedSectorIdsToObjects = this.selectedSectors.map(sectorId => this.sectors.find(sector => sector.uuid === sectorId));
-    this.sharedService.selectedSectorsSource.next(this.convertedSectorIdsToObjects);
+    this.sharedService.selectedSectorsSource.next(this.selectedSectors);
     this.filterCustomersBySectors();
+    this.cdr.detectChanges();
   }
 
   generateId(title: string): string {
@@ -224,31 +227,31 @@ export class DashboardComponent implements OnInit {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     let y = 20;
-  
+
     const reportDate = new Date().toISOString().slice(0, 10);
     const reportName = `Customer_Report_${this.selectedCustomer ? this.selectedCustomer.name : 'All_Customers'}_${reportDate}.pdf`;
     let pageNumber = 1;
-  
+
     // Add title
     doc.setFontSize(22);
     doc.setTextColor(40);
     doc.setFont('helvetica', 'bold');
     doc.text('Customer Report', pageWidth / 2, y, { align: 'center' });
     y += 10;
-  
+
     // Add date
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.text(`Date: ${reportDate}`, pageWidth / 2, y, { align: 'center' });
     y += 20;
-  
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100);
-  
+
     doc.text('Customer Details:', margin, y);
     y += 10;
-    
+
     // Add summary text
     doc.setFontSize(14);
     doc.setFont('helvetica', 'normal');
@@ -272,7 +275,7 @@ export class DashboardComponent implements OnInit {
         y += 10;
       }
     }
-  
+
     if (this.selectedSectors.length > 0) {
       doc.text('Sectors:', margin, y);
       y += 10;
@@ -281,7 +284,7 @@ export class DashboardComponent implements OnInit {
         y += 10;
       });
     }
-  
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100);
@@ -289,10 +292,10 @@ export class DashboardComponent implements OnInit {
     y += 10;
     doc.text('Visual Representation:', margin, y);
     y += 10;
-  
+
     // Add a line break between the summary and the graphs
     y += 10;
-  
+
     const addFooter = () => {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'italic');
@@ -301,14 +304,14 @@ export class DashboardComponent implements OnInit {
       doc.text(reportName, margin, pageHeight - 10);
       pageNumber++;
     };
-  
+
     // Add SVGs to PDF
     for (let card of this.cards) {
       // Skip "Project Success Rate" card if there are no projects
       if (card.title === 'Project Success Rate' && this.projects.length === 0) {
         continue;
       }
-  
+
       const elementId = this.generateId(card.title);
       const element = document.getElementById(elementId);
       if (element) {
@@ -316,29 +319,29 @@ export class DashboardComponent implements OnInit {
         if (svgElement) {
           const imgData = await this.graphExportService.exportGraphToImage(svgElement);
           const imgProps = doc.getImageProperties(imgData.src);
-  
+
           // Reduce the size of the image by increasing the scaling factor
           let imgWidth = imgProps.width / 8;
           let imgHeight = imgProps.height / 8;
-  
+
           if (imgWidth > pageWidth - 2 * margin) {
             imgWidth = pageWidth - 2 * margin;
             imgHeight = (imgProps.height * imgWidth) / imgProps.width;
           }
-  
+
           if (y + imgHeight > pageHeight - margin) {
             addFooter();
             doc.addPage();
             y = margin;
           }
-  
+
           const x = (pageWidth - imgWidth) / 2; // Center the image horizontally
           doc.addImage(imgData.src, 'PNG', x, y, imgWidth, imgHeight);
           y += imgHeight + margin;
         }
       }
     }
-  
+
     addFooter();
     doc.save(reportName);
 

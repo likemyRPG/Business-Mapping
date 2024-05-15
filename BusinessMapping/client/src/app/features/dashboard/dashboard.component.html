@@ -23,6 +23,27 @@
                    id="customerSelect">
         </ng-select>
       </div>
+
+    <div class="flex flex-col sm:flex-row items-center gap-4 mb-6">
+      <div class="flex flex-col sm:flex-row items-center gap-4">      
+        <label for="sectorSelect" class="font-medium text-gray-900">Select a Sector:</label>
+            <ng-select [items]="sectors"
+                      bindLabel="name"
+                      bindValue="uuid"
+                      placeholder="All Sectors"
+                      [(ngModel)]="selectedSectors"
+                      (ngModelChange)="onChangeSector($event)"
+                      [multiple]="true"
+                      [typeahead]="sectorInput$"
+                      [clearable]="true"
+                      [searchable]="true"
+                      [compareWith]="compareSectors"
+                      class="w-full sm:w-56"
+                      id="sectorSelect">
+            </ng-select>
+      </div>
+    </div>
+    
       
       <!-- Select Dropdown for Color Scheme -->
       <div class="flex flex-col sm:flex-row items-center gap-4">
