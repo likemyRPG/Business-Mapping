@@ -29,6 +29,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
   @Input() relationships!: CustomerSectorRelation[];
   @Input() colorScheme: string = 'schemeSet2';
 
+  private tooltipVisible: boolean = true;
 
   constructor(private sharedService: SharedService, private exportService: GraphExportService) {}
 
@@ -152,6 +153,21 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
     // @ts-ignore
     const color = d3.scaleOrdinal(d3[this.colorScheme]);
 
+    // Remove previous tooltip to prevent duplication
+    d3.select(element).selectAll('.tooltip').remove();
+
+    const tooltip = d3.select(element).append('div')
+    .attr('class', 'tooltip')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden')
+    .style('background', '#f9f9f9')
+    .style('border', '1px solid #d3d3d3')
+    .style('padding', '10px')
+    .style('border-radius', '5px')
+    .style('text-align', 'center')
+    .style('font-size', '12px')
+    .style('pointer-events', 'none'); // Prevents the tooltip from blocking mouse events
+
     svg.selectAll(".bar")
     .data(data)
     .enter().append("rect")
@@ -165,8 +181,30 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
     .attr("stroke", d => d.id === this.selectedCustomer ? 'black' : 'none')  // Add black border to highlighted bars
     .attr("stroke-width", d => d.id === this.selectedCustomer ? 2 : 0)  // Increase stroke width for visibility
     .style("cursor", "pointer")
-    .on('click', (event, d) => this.onCustomerClick(d as Customer));
+    .on('mouseover', (event, d) => {
+      if (this.tooltipVisible) {
+        tooltip.html(`<strong>${d.name}</strong><br>Revenue: €${d.revenue}<br><em>Click to view more</em>`)
+          .style('visibility', 'visible');
+      }
+    })
+    .on('mousemove', (event) => {
+      if (this.tooltipVisible) {
+        tooltip.style('top', (event.pageY - 10) + 'px').style('left', (event.pageX + 10) + 'px');
+      }
+    })
+    .on('mouseout', () => {
+      tooltip.style('visibility', 'hidden');
+    })
+    .on('click', (event, d) => {
+      this.onCustomerClick(d as Customer);
+      this.tooltipVisible = false;
+      tooltip.style('visibility', 'hidden'); // Hide tooltip on click
 
+      // Re-enable tooltip visibility after a short delay to avoid immediate re-trigger
+      setTimeout(() => {
+        this.tooltipVisible = true;
+      }, 300);
+    });
     const labelFrequency = Math.ceil(data.length / 20);
 
     svg.append("g")
