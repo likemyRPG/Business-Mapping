@@ -22,24 +22,19 @@
       </ng-select>
     </div>
 
-    <!-- Select Dropdown for Sector Selection - Default: All Sectors
+    <!-- Select Dropdown for Color Scheme -->
     <div class="flex flex-col sm:flex-row items-center gap-4 mb-6">
-      <label for="sectorSelect" class="font-medium text-gray-900">Select a Sector:</label>
-      <ng-select [items]="sectors"
-                 bindLabel="name"
-                 bindValue="uuid"
-                 placeholder="All Sectors"
-                 [(ngModel)]="selectedSectors"
-                 (ngModelChange)="onChangeSector()"
-                 [multiple]="true"
-                 [typeahead]="sectorInput$"
-                 [clearable]="true"
-                 [searchable]="true"
-                 [compareWith]="compareSectors"
+      <label for="colorSchemeSelect" class="font-medium text-gray-900">Select a Color Scheme:</label>
+      <ng-select [items]="colorSchemes"
+                 bindLabel="label"
+                 bindValue="scheme"
+                 placeholder="Select Color Scheme"
+                 [(ngModel)]="selectedColorScheme"
+                 (ngModelChange)="onColorSchemeChange()"
                  class="w-full sm:w-56"
-                 id="sectorSelect">
+                 id="colorSchemeSelect">
       </ng-select>
-    </div> -->
+    </div>
 
     <!-- Selections Display and Reset Button -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -74,16 +69,16 @@
            [attr.id]="generateId(card.title)">
         <div class="mb-4 font-bold text-xl">{{ card.title }}</div>
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
-          <app-revenue-overview [customers]="customers" [relationships]="CustomerSectorRelationships"></app-revenue-overview>
+          <app-revenue-overview [customers]="customers" [relationships]="CustomerSectorRelationships" ></app-revenue-overview>
         </ng-container>
         <ng-container *ngIf="card.title === 'Customer Info Overview'">
           <app-customer-details-card [customers]="customers"></app-customer-details-card>
         </ng-container>
         <ng-container *ngIf="card.title === 'Project Success Rate'">
-          <app-project-success-rate [customers]="customers" [projects]="projects" [projectCustomerRelations]="ProjectCustomerRelations" [customerSectorRelations]="CustomerSectorRelationships"></app-project-success-rate>
+          <app-project-success-rate [customers]="customers" [projects]="projects" [projectCustomerRelations]="ProjectCustomerRelations"></app-project-success-rate>
         </ng-container>
         <ng-container *ngIf="card.title === 'Amount of Customers Per Sector'">
-          <app-sector-ratio [customers]="customers" [relationships]="CustomerSectorRelationships" [sectors]="sectors"></app-sector-ratio>
+          <app-sector-ratio [customers]="customers" [relationships]="CustomerSectorRelationships" [sectors]="sectors" [colorScheme]="selectedColorScheme"></app-sector-ratio>
         </ng-container>
       </div>
     </div>

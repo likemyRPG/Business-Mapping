@@ -58,6 +58,20 @@ export class DashboardComponent implements OnInit {
   filteredCustomers$: Observable<any[]> | undefined;
   filteredSectors$: Observable<any[]> | undefined;
   convertedSectorIdsToObjects: Sector[] = [];
+  selectedColorScheme: string = 'schemeCategory10'; // Default color scheme
+
+  colorSchemes = [
+    { label: 'Category 10', scheme: 'schemeCategory10' },
+    { label: 'Accent', scheme: 'schemeAccent' },
+    { label: 'Dark 2', scheme: 'schemeDark2' },
+    { label: 'Set 1', scheme: 'schemeSet1' },
+    { label: 'Set 2', scheme: 'schemeSet2' },
+    { label: 'Set 3', scheme: 'schemeSet3' },
+    { label: 'Paired', scheme: 'schemePaired' },
+    { label: 'Pastel 1', scheme: 'schemePastel1' },
+    { label: 'Pastel 2', scheme: 'schemePastel2' },
+    { label: 'Tableau 10', scheme: 'schemeTableau10' },
+  ];
 
   constructor(
     private customerService: CustomerService,
@@ -138,12 +152,18 @@ export class DashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  onColorSchemeChange() {
+    // @ts-ignore
+    this.sharedService.changeColorScheme(this.selectedColorScheme);
+    this.cdr.detectChanges();
+  }
+
   filterCustomersBySectors() {
     if (this.selectedSectors.length === 0) {
       this.filteredCustomers = this.customers;
     } else {
       const selectedSectorIds = new Set(this.selectedSectors.map(sector => sector.uuid));
-      this.filteredCustomers = this.customers.filter(customer => 
+      this.filteredCustomers = this.customers.filter(customer =>
         this.CustomerSectorRelationships.some(rel =>
           // @ts-ignore
           rel.customerId === customer.uuid && selectedSectorIds.has(rel.sectorId)
@@ -184,13 +204,9 @@ export class DashboardComponent implements OnInit {
   }
 
   removeSector(sector: Sector) {
-    console.log('Removing sector:', sector);
-    console.log('Selected sectors:', this.selectedSectors);
     this.selectedSectors = this.selectedSectors.filter(s => s.uuid !== sector.uuid);
-    console.log('Selected sectors after removal:', this.selectedSectors);
     // @ts-ignore
     this.convertedSectorIdsToObjects = this.selectedSectors.map(sectorId => this.sectors.find(sector => sector.uuid === sectorId));
-    console.log('Converted sector IDs to objects:', this.convertedSectorIdsToObjects);
     this.sharedService.selectedSectorsSource.next(this.convertedSectorIdsToObjects);
     this.filterCustomersBySectors();
   }

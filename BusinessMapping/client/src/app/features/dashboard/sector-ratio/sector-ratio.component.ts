@@ -17,6 +17,7 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
   @Input() customers!: Customer[];
   @Input() sectors!: Sector[];
   @Input() relationships!: CustomerSectorRelation[];
+  @Input() colorScheme: string = 'schemeCategory10';
 
   @ViewChild('pieChartContainer') pieChartContainer!: ElementRef;
 
@@ -31,6 +32,11 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
       // @ts-ignore
       this.selectedCustomer = customer;
       this.updateData(); // Method to update data based on selected customer
+    });
+
+    this.sharedService.colorScheme.subscribe(scheme => {
+      this.colorScheme = scheme;
+      this.updateData(); // Update the chart with the new color scheme
     });
   }
 
@@ -103,8 +109,8 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
     const height = window.innerHeight * 0.5;
     const radius = Math.min(width, height) / 2;
 
-    const baseColor = d3.scaleOrdinal(d3.schemeTableau10);
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
+    // @ts-ignore
+    const baseColor = d3.scaleOrdinal(d3[this.colorScheme]);
 
     // Clear previous SVG to prevent duplication
     d3.select(this.pieChartContainer.nativeElement).select("svg").remove();
