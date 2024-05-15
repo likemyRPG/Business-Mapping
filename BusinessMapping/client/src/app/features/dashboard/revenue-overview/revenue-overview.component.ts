@@ -27,6 +27,7 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
   selectedCustomer: 'all' | Customer | null = null;
   selectedSectors: Sector[] = [];
   @Input() relationships!: CustomerSectorRelation[];
+  @Input() colorScheme: string = 'schemeSet2';
 
 
   constructor(private sharedService: SharedService, private exportService: GraphExportService) {}
@@ -41,6 +42,11 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
     this.sharedService.selectedSectorsSource.subscribe(selectedSectors => {
       this.selectedSectors = selectedSectors;
       this.updateData(); // Method to update data based on selected sectors
+    });
+
+    this.sharedService.colorScheme.subscribe(scheme => {
+      this.colorScheme = scheme;
+      this.updateData(); // Update the chart with the new color scheme
     });
   }
 
@@ -143,17 +149,23 @@ export class RevenueOverviewComponent implements OnChanges, AfterViewInit, OnIni
 
     y.domain([0, maxY ?? 0]);
 
+    // @ts-ignore
+    const color = d3.scaleOrdinal(d3[this.colorScheme]);
+
     svg.selectAll(".bar")
-      .data(data)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", d => x(d.name) as string | number)
-      .attr("width", x.bandwidth())
-      .attr("y", d => y(d.revenue))
-      .attr("height", d => height - y(d.revenue))
-      .attr("fill", d => (d as Customer).id === this.selectedCustomer ? '#ccff02' : 'steelblue')  // Highlight selected customer
-      .style("cursor", "pointer")
-      .on('click', (event, d) => this.onCustomerClick(d as Customer));
+    .data(data)
+    .enter().append("rect")
+    .attr("class", "bar")
+    .attr("x", d => x(d.name) as string | number)
+    .attr("width", x.bandwidth())
+    .attr("y", d => y(d.revenue))
+    .attr("height", d => height - y(d.revenue))
+    // @ts-ignore
+    .attr("fill", d => d.id === this.selectedCustomer ? '#ccff02' : color(d.name))
+    .attr("stroke", d => d.id === this.selectedCustomer ? 'black' : 'none')  // Add black border to highlighted bars
+    .attr("stroke-width", d => d.id === this.selectedCustomer ? 2 : 0)  // Increase stroke width for visibility
+    .style("cursor", "pointer")
+    .on('click', (event, d) => this.onCustomerClick(d as Customer));
 
     const labelFrequency = Math.ceil(data.length / 20);
 

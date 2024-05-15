@@ -69,13 +69,13 @@
            [attr.id]="generateId(card.title)">
         <div class="mb-4 font-bold text-xl">{{ card.title }}</div>
         <ng-container *ngIf="card.title === 'Customer Revenue Overview'">
-          <app-revenue-overview [customers]="customers" [relationships]="CustomerSectorRelationships" ></app-revenue-overview>
+          <app-revenue-overview [customers]="customers" [relationships]="CustomerSectorRelationships" [colorScheme]="selectedColorScheme"></app-revenue-overview>
         </ng-container>
         <ng-container *ngIf="card.title === 'Customer Info Overview'">
           <app-customer-details-card [customers]="customers"></app-customer-details-card>
         </ng-container>
         <ng-container *ngIf="card.title === 'Project Success Rate'">
-          <app-project-success-rate [customers]="customers" [projects]="projects" [projectCustomerRelations]="ProjectCustomerRelations"></app-project-success-rate>
+          <app-project-success-rate [customers]="customers" [projects]="projects" [projectCustomerRelations]="ProjectCustomerRelations" [customerSectorRelations]="CustomerSectorRelationships" [colorScheme]="selectedColorScheme"></app-project-success-rate>
         </ng-container>
         <ng-container *ngIf="card.title === 'Amount of Customers Per Sector'">
           <app-sector-ratio [customers]="customers" [relationships]="CustomerSectorRelationships" [sectors]="sectors" [colorScheme]="selectedColorScheme"></app-sector-ratio>
