@@ -48,8 +48,8 @@ export class DashboardComponent implements OnInit {
   cards = [
     { title: 'Customer Revenue Overview', isLarge: true },
     { title: 'Customer Info Overview', isLarge: false },
-    { title: 'Amount of Customers Per Sector', isLarge: false },
     { title: 'Project Success Rate', isLarge: false },
+    { title: 'Amount of Customers Per Sector', isLarge: true },
   ];
   selectedCustomer: Customer | null = null;
   selectedSectors: Sector[] = [];
