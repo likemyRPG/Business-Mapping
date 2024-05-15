@@ -54,7 +54,10 @@ export class DashboardComponent implements OnInit {
   selectedCustomer: Customer | null = null;
   selectedSectors: Sector[] = [];
   customerInput$ = new BehaviorSubject<string>('');
+  sectorInput$ = new BehaviorSubject<string>('');
   filteredCustomers$: Observable<any[]> | undefined;
+  filteredSectors$: Observable<any[]> | undefined;
+  convertedSectorIdsToObjects: Sector[] = [];
 
   constructor(
     private customerService: CustomerService,
@@ -69,6 +72,12 @@ export class DashboardComponent implements OnInit {
       debounceTime(200),
       distinctUntilChanged(),
       switchMap(term => this.searchCustomers(term))
+    );
+
+    this.filteredSectors$ = this.sectorInput$.pipe(
+      debounceTime(200),
+      distinctUntilChanged(),
+      switchMap(term => this.searchSectors(term))
     );
 
     this.customerService.getAllCustomers().subscribe((data: Customer[]) => {
@@ -112,11 +121,20 @@ export class DashboardComponent implements OnInit {
     this.sharedService.selectedSectorsSource.subscribe(selectedSectors => {
       this.selectedSectors = selectedSectors;
       this.filterCustomersBySectors();
+      console.log('Selected sectors:', this.selectedSectors);
     });
   }
 
   onChangeCustomer() {
     this.sharedService.changeCustomer(this.selectedCustomer);
+    this.cdr.detectChanges();
+  }
+
+  onChangeSector() {
+    // @ts-ignore
+    this.convertedSectorIdsToObjects = this.selectedSectors.map(sectorId => this.sectors.find(sector => sector.uuid === sectorId));
+    this.sharedService.selectedSectorsSource.next(this.convertedSectorIdsToObjects);
+    this.filterCustomersBySectors();
     this.cdr.detectChanges();
   }
 
@@ -142,8 +160,19 @@ export class DashboardComponent implements OnInit {
     return of(this.filteredCustomers.filter(customer => customer.name.toLowerCase().includes(term.toLowerCase())));
   }
 
+  searchSectors(term: string): Observable<any[]> {
+    if (term === '') {
+      return of(this.sectors);
+    }
+    return of(this.sectors.filter(sector => sector.name.toLowerCase().includes(term.toLowerCase())));
+  }
+
   compareCustomers(c1: Customer, c2: Customer): boolean {
     return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
+  }
+
+  compareSectors(s1: Sector, s2: Sector): boolean {
+    return s1 && s2 ? s1.uuid === s2.uuid : s1 === s2;
   }
 
   resetSelections() {
@@ -155,8 +184,14 @@ export class DashboardComponent implements OnInit {
   }
 
   removeSector(sector: Sector) {
+    console.log('Removing sector:', sector);
+    console.log('Selected sectors:', this.selectedSectors);
     this.selectedSectors = this.selectedSectors.filter(s => s.uuid !== sector.uuid);
-    this.sharedService.selectedSectorsSource.next(this.selectedSectors);
+    console.log('Selected sectors after removal:', this.selectedSectors);
+    // @ts-ignore
+    this.convertedSectorIdsToObjects = this.selectedSectors.map(sectorId => this.sectors.find(sector => sector.uuid === sectorId));
+    console.log('Converted sector IDs to objects:', this.convertedSectorIdsToObjects);
+    this.sharedService.selectedSectorsSource.next(this.convertedSectorIdsToObjects);
     this.filterCustomersBySectors();
   }
 
