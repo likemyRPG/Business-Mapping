@@ -23,3 +23,24 @@ button:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6);
 }
+
+.custom-ng-select .ng-select-container {
+  max-height: 40px; /* Adjust the height as needed */
+  overflow-y: auto;
+}
+
+.custom-ng-select .ng-select-container .ng-value-container {
+  max-height: 38px; /* Adjust the height as needed */
+  overflow-y: auto;
+}
+
+.custom-ng-select .ng-select-container .ng-value-container .ng-value {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.custom-ng-select .ng-select-container .ng-value-container .ng-value .ng-value-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
