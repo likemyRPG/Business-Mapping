@@ -217,24 +217,35 @@ export class DashboardComponent implements OnInit {
 
   async generatePDF() {
     const doc = new jsPDF();
-    let y = 20;
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-
+    let y = 20;
+  
+    const reportDate = new Date().toISOString().slice(0, 10);
+    const reportName = `Customer_Report_${this.selectedCustomer ? this.selectedCustomer.name : 'All_Customers'}_${reportDate}.pdf`;
+    let pageNumber = 1;
+  
     // Add title
     doc.setFontSize(22);
     doc.setTextColor(40);
     doc.setFont('helvetica', 'bold');
     doc.text('Customer Report', pageWidth / 2, y, { align: 'center' });
+    y += 10;
+  
+    // Add date
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Date: ${reportDate}`, pageWidth / 2, y, { align: 'center' });
     y += 20;
-
+  
     doc.setFontSize(12);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100);
-
+  
     doc.text('Customer Details:', margin, y);
     y += 10;
+    
     // Add summary text
     doc.setFontSize(14);
     doc.setFont('helvetica', 'normal');
@@ -258,7 +269,7 @@ export class DashboardComponent implements OnInit {
         y += 10;
       }
     }
-
+  
     if (this.selectedSectors.length > 0) {
       doc.text('Sectors:', margin, y);
       y += 10;
@@ -267,7 +278,7 @@ export class DashboardComponent implements OnInit {
         y += 10;
       });
     }
-
+  
     doc.setFontSize(12);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100);
@@ -275,17 +286,26 @@ export class DashboardComponent implements OnInit {
     y += 10;
     doc.text('Visual Representation:', margin, y);
     y += 10;
-
+  
     // Add a line break between the summary and the graphs
     y += 10;
-
+  
+    const addFooter = () => {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100);
+      doc.text(`Page ${pageNumber}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+      doc.text(reportName, margin, pageHeight - 10);
+      pageNumber++;
+    };
+  
     // Add SVGs to PDF
     for (let card of this.cards) {
       // Skip "Project Success Rate" card if there are no projects
       if (card.title === 'Project Success Rate' && this.projects.length === 0) {
         continue;
       }
-
+  
       const elementId = this.generateId(card.title);
       const element = document.getElementById(elementId);
       if (element) {
@@ -293,29 +313,30 @@ export class DashboardComponent implements OnInit {
         if (svgElement) {
           const imgData = await this.graphExportService.exportGraphToImage(svgElement);
           const imgProps = doc.getImageProperties(imgData.src);
-
+  
           // Reduce the size of the image by increasing the scaling factor
           let imgWidth = imgProps.width / 8;
           let imgHeight = imgProps.height / 8;
-
+  
           if (imgWidth > pageWidth - 2 * margin) {
             imgWidth = pageWidth - 2 * margin;
             imgHeight = (imgProps.height * imgWidth) / imgProps.width;
           }
-
+  
           if (y + imgHeight > pageHeight - margin) {
+            addFooter();
             doc.addPage();
             y = margin;
           }
-
+  
           const x = (pageWidth - imgWidth) / 2; // Center the image horizontally
           doc.addImage(imgData.src, 'PNG', x, y, imgWidth, imgHeight);
           y += imgHeight + margin;
         }
       }
     }
-
-    const reportName = `Customer_Report_${this.selectedCustomer ? this.selectedCustomer.name : 'All_Customers'}_${new Date().toISOString().slice(0, 10)}.pdf`;
+  
+    addFooter();
     doc.save(reportName);
   }
 }
