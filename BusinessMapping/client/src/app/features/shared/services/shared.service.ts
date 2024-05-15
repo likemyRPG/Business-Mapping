@@ -11,6 +11,9 @@ export class SharedService {
   selectedSectorsSource = new BehaviorSubject<Sector[]>([]);
   currentCustomer = this.customerSource.asObservable();
 
+  private colorSchemeSource = new BehaviorSubject<string>('schemeCategory10');
+  colorScheme = this.colorSchemeSource.asObservable();
+
   constructor() { }
 
   changeCustomer(customer: "all" | Customer | null) {
@@ -25,5 +28,9 @@ export class SharedService {
 
   getCurrentCustomer() {
     return this.customerSource.getValue();
+  }
+
+  changeColorScheme(colorScheme: string) {
+    this.colorSchemeSource.next(colorScheme);
   }
 }
