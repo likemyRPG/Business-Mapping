@@ -76,20 +76,23 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
       return acc;
     }, {} as Record<string, number>);
 
+    console.log(this.selectedCustomer);
+
     // @ts-ignore
     const isAllCustomers = this.selectedCustomer === 'all';
 
     // Highlight the sector of the selected customer
+    console.log(this.selectedCustomer);
+    console.log(this.customers);
     const data = this.sectors.map(sector => {
-      const isHighlighted = !isAllCustomers && this.relationships.some(relation =>
+      const isHighlighted = (!isAllCustomers && this.relationships.some(relation =>
         // @ts-ignore
         relation.sectorId === sector.uuid && relation.customerId === this.selectedCustomer
-      );
+      )) || this.selectedSectors.some(selectedSector => selectedSector.uuid === sector.uuid);
       return {
         name: sector.name,
         count: sectorCounts[sector.uuid] || 0,
         isHighlighted: isHighlighted,
-        isSelected: this.selectedSectors.some(selectedSector => selectedSector.uuid === sector.uuid)
       };
     }).filter(sector => sector.count > 0);
 
@@ -100,6 +103,7 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
     const height = window.innerHeight * 0.5;
     const radius = Math.min(width, height) / 2;
 
+    const baseColor = d3.scaleOrdinal(d3.schemeTableau10);
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
     // Clear previous SVG to prevent duplication
@@ -114,7 +118,7 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
 
     const pie = d3.pie<Sector>().sort(null).value((d: any) => d.count);
     const path = d3.arc().outerRadius(radius).innerRadius(0);
-    const label = d3.arc().outerRadius(radius).innerRadius(radius - 80);
+    const label = d3.arc().outerRadius(radius * 0.7).innerRadius(radius * 0.7);
 
     const arc = svg.selectAll(".arc")
       // @ts-ignore
@@ -124,8 +128,12 @@ export class SectorRatioComponent implements OnChanges, AfterViewInit, OnInit {
 
     arc.append("path")
       .attr("d", path as any)
-      // ccff02 is a color that is used to highlight the sector of the selected customer
-      .attr("fill", (d: any) => (d.data as any).isSelected ? '#ccff02' : color(d.data.name))
+      .attr("fill", (d: any) => {
+        const baseFill = baseColor(d.data.name);
+        const opacity = d.data.isHighlighted ? 1 : 0.5;
+        // @ts-ignore
+        return d3.color(baseFill).brighter(1 - opacity).toString();
+      })      
       // @ts-ignore
       .attr("stroke", d => d.data.isHighlighted ? 'black' : 'none') // Apply a black stroke to highlighted sectors
       // @ts-ignore

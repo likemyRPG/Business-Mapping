@@ -1,14 +1,16 @@
-<div class="flex flex-col items-end">
-  <button
-    (click)="exportGraph()"
-    class="mb-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-2 rounded text-xs focus:outline-none focus:shadow-outline"
-  >
-    Export Graph
-  </button>
+<!-- Project Success Rate Container -->
+<div class="graph-container relative">
+  <div class="absolute top-0 right-0 flex flex-col items-end p-2">
+    <button
+      (click)="exportGraph()"
+      class="mb-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-2 rounded text-xs focus:outline-none focus:shadow-outline"
+    >
+      Export Graph
+    </button>
+  </div>
   <div #pieChartContainer class="chart-container w-full">
     <!-- Your chart will go here -->
   </div>
-  <!-- Label with the info to click the sectors to see the details -->
   <div class="text-xs text-gray-600 mt-2">
     Click on the sectors to see the details
   </div>
