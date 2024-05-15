@@ -1,14 +1,14 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
-import {Project} from "../../shared/models/Project";
-import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelation";
-import {Customer} from "../../shared/models/Customer";
-import {FormsModule} from "@angular/forms";
-import {NgForOf} from "@angular/common";
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { Project } from "../../shared/models/Project";
+import { ProjectCustomerRelation } from "../../shared/models/ProjectCustomerRelation";
+import { Customer } from "../../shared/models/Customer";
+import { FormsModule } from "@angular/forms";
+import { NgForOf } from "@angular/common";
 import * as d3 from 'd3';
-import {SharedService} from "../../shared/services/shared.service";
-import {GraphExportService} from "../../shared/services/gaph-export.service";
-import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
-import {Sector} from "../../shared/models/Sector";
+import { SharedService } from "../../shared/services/shared.service";
+import { GraphExportService } from "../../shared/services/gaph-export.service";
+import { CustomerSectorRelation } from "../../shared/models/CustomerSectorRelation";
+import { Sector } from "../../shared/models/Sector";
 
 @Component({
   selector: 'app-project-success-rate',
@@ -18,7 +18,7 @@ import {Sector} from "../../shared/models/Sector";
     NgForOf
   ],
   templateUrl: './project-success-rate.component.html',
-  styleUrl: './project-success-rate.component.css'
+  styleUrls: ['./project-success-rate.component.css']
 })
 export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, OnInit {
   @Input() customers!: Customer[];
@@ -27,22 +27,20 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   @Input() customerSectorRelations!: CustomerSectorRelation[];
   selectedCustomer: 'all' | Customer | null = null;
 
-  @ViewChild('projectSuccessRateContainer', {static: true}) projectSuccessRateContainer!: ElementRef;
+  @ViewChild('projectSuccessRateContainer', { static: true }) projectSuccessRateContainer!: ElementRef;
   private selectedSectors: Sector[] = [];
 
-  constructor(private sharedService: SharedService, private exportService: GraphExportService) {
-  }
+  constructor(private sharedService: SharedService, private exportService: GraphExportService) { }
 
   ngOnInit() {
     this.sharedService.currentCustomer.subscribe(customer => {
-      // @ts-ignore
       this.selectedCustomer = customer;
-      this.updateData(); // Method to update data based on selected customer
+      this.updateData();
     });
 
     this.sharedService.selectedSectorsSource.subscribe(selectedSectors => {
       this.selectedSectors = selectedSectors;
-      this.updateData(); // Method to update data based on selected sectors
+      this.updateData();
     });
   }
 
@@ -51,7 +49,6 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   }
 
   ngAfterViewInit(): void {
-    // Wait for data to be available
     if (this.projects && this.customers && this.projectCustomerRelations && this.projectSuccessRateContainer) {
       this.createProjectSuccessRate();
       this.addResizeListener();
@@ -87,7 +84,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       return;
     }
     const element = this.projectSuccessRateContainer.nativeElement;
-    const margin = {top: 20, right: 20, bottom: 100, left: 60};
+    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
     const containerWidth = element.offsetWidth;
     const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
@@ -102,7 +99,7 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const color = d3.scaleOrdinal(["#4CAF50", "#F44336"]); // Green for success, Red for no success
+    const color = d3.scaleOrdinal(["#4CAF50", "#F44336"]);
 
     const arc = d3.arc()
       .outerRadius(radius - 10)
@@ -117,7 +114,6 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
 
     const successData = this.processData(this.selectedCustomer);
 
-    // Handle no data scenario
     if (successData.length === 0) {
       svg.append("text")
         .attr("x", width / 2)
@@ -129,24 +125,24 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     }
 
     const arcs = g.selectAll(".arc")
-      // @ts-ignore
+    // @ts-ignore
       .data(pie(successData))
       .enter().append("g")
       .attr("class", "arc");
 
     arcs.append("path")
-      // @ts-ignore
+    // @ts-ignore
       .attr("d", arc)
       .style("fill", d => color((d as any).data.type));
 
-    // Add text labels
     arcs.append("text")
+      .filter(d => (d as any).data.value > 0) // Hide text if the value is 0
       .attr("transform", d => `translate(${arc.centroid((d as any))})`)
       .attr("dy", "0.35em")
       .style("text-anchor", "middle")
+      // Dsiplay the percentage of success/failure (When 0, don't display the percentage)
       .text(d => `${(d as any).data.value}%`);
 
-    // Add a simple legend
     const legend = svg.selectAll(".legend")
       .data(successData)
       .enter().append("g")
@@ -154,16 +150,16 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       .attr("transform", (d, i) => `translate(0,${i * 20})`);
 
     legend.append("rect")
-      .attr("x", width - 18)
+      .attr("x", 0)
       .attr("width", 18)
       .attr("height", 18)
       .style("fill", d => color(d.type));
 
     legend.append("text")
-      .attr("x", width - 24)
+      .attr("x", 24)
       .attr("y", 9)
       .attr("dy", ".35em")
-      .style("text-anchor", "end")
+      .style("text-anchor", "start")
       .text(d => d.type);
 
     svg.attr('width', width).attr('height', height);
@@ -172,7 +168,6 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
   private processData(selectedCustomer: "all" | Customer | null) {
     let filteredProjects = this.projects;
 
-    // Filter projects based on the customers in selected sectors
     if (this.selectedSectors.length > 0) {
       const selectedSectorIds = new Set(this.selectedSectors.map(sector => sector.uuid));
       const customerIdsFromSelectedSectors = new Set(
@@ -191,7 +186,6 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
       filteredProjects = this.projects.filter(p => projectIdsForSelectedCustomers.has(p.uuid));
     }
 
-    // Additional filter by selected customer if any
     if (selectedCustomer && selectedCustomer !== 'all') {
       const customerProjects = new Set(
         this.projectCustomerRelations
@@ -214,8 +208,8 @@ export class ProjectSuccessRateComponent implements OnChanges, AfterViewInit, On
     }
 
     return [
-      {type: 'Success', value: successRate},
-      {type: 'Failed', value: failureRate}
+      { type: 'Success', value: successRate },
+      { type: 'Failed', value: failureRate }
     ];
   }
 }
