@@ -1,4 +1,3 @@
-/* customer-visualization-component.component.css */
 .active {
   stroke: #000;
   stroke-width: 2px;
@@ -66,4 +65,17 @@ svg * {
 
 .text-uppercase {
   text-transform: uppercase;
+}
+
+.select-centered {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+}
+
+button:hover {
+  opacity: 0.9;
+  transition: opacity 0.2s;
 }
