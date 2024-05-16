@@ -1,6 +1,6 @@
 <div class="flex h-screen overflow-hidden relative">
-  <div [ngStyle]="{'right': sidebarExpanded ? '18rem' : '0', 'width': sidebarExpanded ? 'calc(100% - 18rem)' : '100%'}" class="absolute top-0 p-4 z-10">
-    <select (change)="onNodeSelected($event)" class="w-full p-2 rounded border shadow">
+  <div [ngStyle]="{'right': sidebarExpanded ? '18rem' : '0', 'width': sidebarExpanded ? 'calc(100% - 18rem)' : '100%'}" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+    <select (change)="onNodeSelected($event)" class="w-80 p-2 rounded border shadow mx-auto">
       <option value="" disabled selected>Select a node...</option>
       <option *ngFor="let node of nodes" [value]="node.id">{{ node.name }}</option>
     </select>
@@ -9,8 +9,7 @@
     <div #chart class="chart-container flex-grow bg-white"></div>
   </div>
 
-  <!-- Adjust the button container's positioning to be dynamic with the sidebar state -->
-  <div [ngClass]="{'right-72': sidebarExpanded, 'right-0': !sidebarExpanded}" class="absolute bottom-0 z-20 p-4 space-y-2">
+  <div [ngClass]="{'right-72': sidebarExpanded, 'right-0': !sidebarExpanded}" class="absolute bottom-4 z-20 p-4 space-y-2">
     <button (click)="zoomIn()" class="flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M5 8l7 7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
@@ -30,13 +29,13 @@
       Reset Zoom
     </button>
     <button (click)="openAllNodes()" class="flex items-center justify-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow">
-      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
       </svg>
       Open All Nodes
     </button>
     <button (click)="organizeGroups()" class="flex items-center justify-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow">
-      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M19 12H5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
       </svg>
       Organize Groups

@@ -512,7 +512,9 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     const legend = this.svg.append("g")
       .attr("class", "legend")
-      .attr("transform", "translate(20,20)")
+      // Bottom of the chart
+      .attr("transform", "translate(200, 200)")
+      .style("font-size", "12px")
       .style("pointer-events", "none");
 
     legend.append("circle")
