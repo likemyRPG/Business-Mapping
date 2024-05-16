@@ -1,23 +1,16 @@
-import {
-  AfterViewInit,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ViewChild
-} from '@angular/core';
-import {Customer} from "../../shared/models/Customer";
-import {CustomerSectorRelation} from "../../shared/models/CustomerSectorRelation";
-import {Sector} from "../../shared/models/Sector";
+//@ts-nocheck
+
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { Customer } from "../../shared/models/Customer";
+import { CustomerSectorRelation } from "../../shared/models/CustomerSectorRelation";
+import { Sector } from "../../shared/models/Sector";
 import * as d3 from 'd3';
-import {SimulationNodeDatum} from 'd3';
-import {CommonModule, DatePipe, DecimalPipe, NgClass, NgIf} from "@angular/common";
-import {Project} from "../../shared/models/Project";
-import {ProjectCustomerRelation} from "../../shared/models/ProjectCustomerRelation";
-import {AccountManagerSectorRelation} from "../../shared/models/AccountManagerSectorRelation";
-import {AccountManager} from "../../shared/models/AccountManager";
+import { SimulationNodeDatum } from 'd3';
+import { CommonModule, DatePipe, DecimalPipe, NgClass, NgIf } from "@angular/common";
+import { Project } from "../../shared/models/Project";
+import { ProjectCustomerRelation } from "../../shared/models/ProjectCustomerRelation";
+import { AccountManagerSectorRelation } from "../../shared/models/AccountManagerSectorRelation";
+import { AccountManager } from "../../shared/models/AccountManager";
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -29,10 +22,10 @@ import { FormsModule } from '@angular/forms';
     DecimalPipe,
     DatePipe,
     FormsModule,
-    CommonModule
+    CommonModule,
   ],
   templateUrl: './customer-visualization-component.component.html',
-  styleUrl: './customer-visualization-component.component.css'
+  styleUrls: ['./customer-visualization-component.component.css']
 })
 export class CustomerVisualizationComponent implements OnChanges, AfterViewInit {
   @ViewChild('chart') chartContainer!: ElementRef;
@@ -44,10 +37,13 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   @Input() projects!: Project[];
   @Input() accountManagers!: AccountManager[];
 
+  nodes: any[] = [];
+  links: any[] = [];
+
   selectedCustomer: Customer | null = null;
   selectedNode: Customer | Sector | Project | AccountManager | null = null;
   selectedNodeType: string = '';
-  searchTerm: string = '';
+  selectedNodeId: string = '';
 
   protected sidebarExpanded: boolean = true;
   private simulation!: d3.Simulation<d3.SimulationNodeDatum, undefined>;
@@ -87,45 +83,161 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     }
   }
 
-  filterNodes(): void {
-    const term = this.searchTerm.toLowerCase();
-    // @ts-ignore
-    if (!this.nodes) {
-      console.error("Nodes array is undefined or not initialized.");
+  onNodeSelected(event: any): void {
+    const selectedId = event.target.value;
+    this.filterNodes(selectedId);
+  }
+
+  filterNodes(selectedId: string): void {
+    if (!this.nodes || !this.links) {
+      console.error("Nodes or links array is undefined or not initialized.");
       return;
     }
-  
-    // @ts-ignore
+
+    // Track nodes that need to be highlighted and visible
+    const highlightedNodeIds = new Set<string>();
+    const visibleNodeIds = new Set<string>();
+
+    // Add the already visible nodes to the visible set
+    this.nodes.filter(node => node.visible).forEach(node => visibleNodeIds.add(node.id));
+
     this.nodes.forEach(node => {
-      // If node name matches the search term, ensure it is visible and highlighted
-      if (node.name.toLowerCase().includes(term)) {
-        node.visible = true; // Make sure the node is visible
-        node.highlighted = true; // Highlight this node
-      } else {
-        // If not a match and no search term is set, reset the highlight without changing visibility
-        if (term === '') {
-          node.highlighted = false; // Only remove highlighting if there is no search term
-        } else {
-          // If there is a search term and the node does not match, do not change its visibility
-          node.highlighted = false;
+      if (node.id === selectedId) {
+        node.highlighted = true;
+        highlightedNodeIds.add(node.id);
+
+        // Ensure related nodes are visible
+        if (node.type === 'project') {
+          const relatedCustomerIds = this.projectCustomerRelations
+            .filter(rel => String(rel.projectId) === node.id)
+            .map(rel => String(rel.customerId));
+
+          relatedCustomerIds.forEach(customerId => {
+            visibleNodeIds.add(customerId);
+            const relatedSectorIds = this.customerSectorRelations
+              .filter(rel => String(rel.customerId) === customerId)
+              .map(rel => String(rel.sectorId));
+
+            relatedSectorIds.forEach(sectorId => {
+              visibleNodeIds.add(sectorId);
+
+              const relatedAccountManagerIds = this.accountManagerSectorRelations
+                .filter(rel => String(rel.sectorId) === sectorId)
+                .map(rel => String(rel.accountManagerId));
+
+              relatedAccountManagerIds.forEach(accountManagerId => {
+                visibleNodeIds.add(accountManagerId);
+              });
+            });
+          });
+        } else if (node.type === 'customer') {
+          const relatedProjectIds = this.projectCustomerRelations
+            .filter(rel => String(rel.customerId) === node.id)
+            .map(rel => String(rel.projectId));
+
+          relatedProjectIds.forEach(projectId => {
+            visibleNodeIds.add(projectId);
+          });
+
+          const relatedSectorIds = this.customerSectorRelations
+            .filter(rel => String(rel.customerId) === node.id)
+            .map(rel => String(rel.sectorId));
+
+          relatedSectorIds.forEach(sectorId => {
+            visibleNodeIds.add(sectorId);
+
+            const relatedAccountManagerIds = this.accountManagerSectorRelations
+              .filter(rel => String(rel.sectorId) === sectorId)
+              .map(rel => String(rel.accountManagerId));
+
+            relatedAccountManagerIds.forEach(accountManagerId => {
+              visibleNodeIds.add(accountManagerId);
+            });
+          });
+        } else if (node.type === 'sector') {
+          const relatedCustomerIds = this.customerSectorRelations
+            .filter(rel => String(rel.sectorId) === node.id)
+            .map(rel => String(rel.customerId));
+
+          relatedCustomerIds.forEach(customerId => {
+            visibleNodeIds.add(customerId);
+
+            const relatedProjectIds = this.projectCustomerRelations
+              .filter(rel => String(rel.customerId) === customerId)
+              .map(rel => String(rel.projectId));
+
+            relatedProjectIds.forEach(projectId => {
+              visibleNodeIds.add(projectId);
+            });
+          });
+
+          const relatedAccountManagerIds = this.accountManagerSectorRelations
+            .filter(rel => String(rel.sectorId) === node.id)
+            .map(rel => String(rel.accountManagerId));
+
+          relatedAccountManagerIds.forEach(accountManagerId => {
+            visibleNodeIds.add(accountManagerId);
+          });
+        } else if (node.type === 'accountManager') {
+          const relatedSectorIds = this.accountManagerSectorRelations
+            .filter(rel => String(rel.accountManagerId) === node.id)
+            .map(rel => String(rel.sectorId));
+
+          relatedSectorIds.forEach(sectorId => {
+            visibleNodeIds.add(sectorId);
+
+            const relatedCustomerIds = this.customerSectorRelations
+              .filter(rel => String(rel.sectorId) === sectorId)
+              .map(rel => String(rel.customerId));
+
+            relatedCustomerIds.forEach(customerId => {
+              visibleNodeIds.add(customerId);
+
+              const relatedProjectIds = this.projectCustomerRelations
+                .filter(rel => String(rel.customerId) === customerId)
+                .map(rel => String(rel.projectId));
+
+              relatedProjectIds.forEach(projectId => {
+                visibleNodeIds.add(projectId);
+              });
+            });
+          });
         }
+      } else {
+        node.highlighted = false;
       }
     });
-  
-    this.updateNodeStyles(); // Apply styles based on changes to visibility and highlight state
+
+    // Update highlighting based on the tracked node IDs
+    this.nodes.forEach(node => {
+      node.visible = highlightedNodeIds.has(node.id) || visibleNodeIds.has(node.id);
+    });
+
+    this.updateNodeStyles();
+    this.updateLinkVisibility();
   }
 
   updateNodeStyles(): void {
-    this.svg.selectAll(".node circle")
-    // @ts-ignore
-      .style("display", d => d.visible ? "block" : "none") // Control visibility based on 'visible' property
-    // @ts-ignore
+    this.svg.selectAll<SVGGElement, any>(".node")
+      .style("display", d => d.visible ? "block" : "none")
+      .select("circle")
       .attr("stroke", d => d.highlighted ? "yellow" : "none") // Apply highlighting
-    // @ts-ignore
-      .attr("stroke-width", d => d.highlighted ? 2 : 0);
+      .attr("stroke-width", d => d.highlighted ? 6 : 0);
   }
-  
-  
+
+  updateLinkVisibility(): void {
+    this.svg.selectAll<SVGLineElement, any>(".links line")
+      .style("display", d => {
+        const sourceNode = this.nodes.find(node => node.id === String(d.source.id));
+        const targetNode = this.nodes.find(node => node.id === String(d.target.id));
+
+        if (sourceNode && targetNode) {
+          return sourceNode.visible && targetNode.visible ? "block" : "none";
+        }
+
+        return "none";
+      });
+  }
 
   createChart(): void {
     if (!this.customers || !this.sectors || !this.chartContainer || !this.customerSectorRelations || !this.projects || !this.projectCustomerRelations || !this.accountManagers || !this.accountManagerSectorRelations) {
@@ -136,34 +248,22 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     const width = element.offsetWidth;
     const height = window.innerHeight;
 
-    const customerColor = d3.scaleOrdinal<string>()
-    .domain(['customer'])
-    .range(["#3182bd"]);
-
-    const sectorColor = d3.scaleOrdinal<string>()
-      .domain(['sector'])
-      .range(["#31a354"]);
-
-    const projectColor = d3.scaleOrdinal<string>()
-      .domain(['project'])
-      .range(["#fd8d3c"]);
-
-    const accountManagerColor = d3.scaleOrdinal<string>()
-      .domain(['accountManager'])
-      .range(["#e6550d"]);
+    // Define color scales
+    const customerColor = d3.scaleOrdinal<string>().domain(['customer']).range(["#3182bd"]);
+    const sectorColor = d3.scaleOrdinal<string>().domain(['sector']).range(["#31a354"]);
+    const projectColor = d3.scaleOrdinal<string>().domain(['project']).range(["#fd8d3c"]);
+    const accountManagerColor = d3.scaleOrdinal<string>().domain(['accountManager']).range(["#e6550d"]);
 
     let accountManagerRevenues: Record<string, number> = {};
 
     d3.select(element).selectAll('svg').remove();
 
-    this.zoomBehavior = d3.zoom()
-      .scaleExtent([0.1, 10])
-      .on("zoom", (event) => {
-        this.svg.attr("transform", event.transform)
-        this.svg.selectAll("text").style("display", function () {
-          return event.transform.k > .3 ? "block" : "none";
-        });
+    this.zoomBehavior = d3.zoom().scaleExtent([0.1, 10]).on("zoom", (event) => {
+      this.svg.attr("transform", event.transform)
+      this.svg.selectAll("text").style("display", function () {
+        return event.transform.k > .3 ? "block" : "none";
       });
+    });
 
     this.svg = d3.select(element).append('svg')
       .attr('width', width)
@@ -178,10 +278,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .attr("height", height)
       .style("fill", "none")
       .style("pointer-events", "all");
-
-    if (this.searchTerm) {
-      this.filterNodes();
-    }
 
     let sectorRevenues: Record<string, number> = {};
 
@@ -199,7 +295,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     }
 
     if (this.accountManagerSectorRelations) {
-        accountManagerRevenues = this.accountManagerSectorRelations.reduce((acc, cur) => {
+      accountManagerRevenues = this.accountManagerSectorRelations.reduce((acc, cur) => {
         const sectorKey = String(cur.sectorId);
         const sectorRevenue = sectorRevenues[sectorKey] || 0;
         const accountKey = String(cur.accountManagerId);
@@ -245,7 +341,12 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       year?: number;
       status?: string;
       startDate?: string;
-      highlighted: boolean; // Added to track if the node is highlighted
+      endDate?: string;
+      scope?: string;
+      budget?: number;
+      actualCost?: number;
+      impact?: string;
+      highlighted: boolean;
     }
 
     const combinedNodes: VisualizationNode[] = [
@@ -258,6 +359,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         location: customer.location,
         industry: customer.industry,
         visible: false,
+        highlighted: false,
       } as VisualizationNode)),
 
       ...this.sectors.map(sector => ({
@@ -266,6 +368,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         type: 'sector',
         revenue: sectorRevenues[String(sector.uuid)] || 0,
         visible: true,
+        highlighted: false,
       } as VisualizationNode)),
 
       ...this.projects.map(project => ({
@@ -281,10 +384,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         startDate: project.startDate,
         endDate: project.endDate,
         scope: project.scope,
-        onTime: project.onTime,
+        budget: project.budget,
         actualCost: project.actualCost,
         impact: project.impact,
-        highlighted: false
+        highlighted: false,
       } as VisualizationNode)),
 
       ...this.accountManagers.map(accountManager => ({
@@ -293,17 +396,19 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         type: 'accountManager',
         revenue: accountManagerRevenues[String(accountManager.uuid)] || 0,
         visible: true,
+        highlighted: false,
       } as VisualizationNode))
     ];
 
-    // @ts-ignore
-    this.nodes = combinedNodes; 
+    this.nodes = combinedNodes;
 
     const links = [
-      ...this.customerSectorRelations.map(r => ({source: r.customerId, target: r.sectorId})),
-      ...this.projectCustomerRelations.map(r => ({source: r.customerId, target: r.projectId})),
-      ...this.accountManagerSectorRelations.map(r => ({source: r.accountManagerId, target: r.sectorId}))
+      ...this.customerSectorRelations.map(r => ({ source: r.customerId, target: r.sectorId })),
+      ...this.projectCustomerRelations.map(r => ({ source: r.customerId, target: r.projectId })),
+      ...this.accountManagerSectorRelations.map(r => ({ source: r.accountManagerId, target: r.sectorId }))
     ];
+
+    this.links = links;
 
     const link = this.svg.append("g")
       .attr("class", "links")
@@ -311,9 +416,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .data(links)
       .enter().append("line")
       .attr("stroke-width", 1)
-      .style("stroke", "#999");
+      .style("stroke", "#999")
+      .style("display", "none"); // Initially hide all links
 
-      const node = this.svg.selectAll<SVGGElement, VisualizationNode>(".node")
+    const node = this.svg.selectAll<SVGGElement, VisualizationNode>(".node")
       .data(combinedNodes)
       .enter().append("g")
       .attr("class", "node")
@@ -322,6 +428,14 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         .on("start", (event, d) => this.dragStarted(event, d))
         .on("drag", (event, d) => this.dragged(event, d))
         .on("end", (event, d) => this.dragEnded(event, d)))
+      .on('click', (event, d) => {
+        if (d.type === 'sector') {
+          this.toggleCustomersVisibility(d.id);
+        } else if (d.type === 'customer') {
+          this.toggleProjectsVisibility(d.id);
+        }
+        event.stopPropagation();
+      })
       .on('mouseover', (event, d) => {
         if (d.type === 'customer') {
           this.selectedCustomer = d as unknown as Customer;
@@ -329,7 +443,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         this.selectedNode = d as Customer | Sector | Project | AccountManager | null;
         this.selectedNodeType = d.type.toUpperCase();
         this.updateSidebar();
-    });
+      });
 
     node.style("display", d => (d as any).visible ? "block" : "none");
 
@@ -352,7 +466,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         }
       });
 
-
     node.append("text")
       .attr("dy", ".35em")
       .attr("text-anchor", "middle")
@@ -361,74 +474,26 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .style("font-size", "12px")
       .text(d => d.name);
 
-
-    node.filter(d => d.type === 'sector')
-      .on('click', (event, d) => {
-        toggleCustomersVisibility(d.id);
-        event.stopPropagation();
-      });
-
-    node.filter(d => d.type === 'customer')
-      .on('click', (event, d) => {
-        toggleProjectsVisibility(d.id);
-        event.stopPropagation();
-      });
-
-    const toggleCustomersVisibility = (sectorId: string) => {
-      const relatedCustomers = this.customerSectorRelations.filter(r => String(r.sectorId) === sectorId).map(r => String(r.customerId));
-      combinedNodes.forEach(node => {
-        if (node.type === 'customer' && relatedCustomers.includes(String(node.id))) {
-          node.visible = !node.visible;
-        }
-      });
-      this.svg.selectAll(".node")
-        .style("display", d => (d as any).visible ? "block" : "none");
-      updateLinkVisibility();
-    };
-
-    const toggleProjectsVisibility = (customerId: string) => {
-      const relatedProjects = this.projectCustomerRelations.filter(r => String(r.customerId) === customerId).map(r => String(r.projectId));
-      combinedNodes.forEach(node => {
-        if (node.type === 'project' && relatedProjects.includes(String(node.id))) {
-          node.visible = !node.visible;
-        }
-      });
-      this.svg.selectAll(".node")
-        .style("display", d => (d as any).visible ? "block" : "none");
-      updateLinkVisibility();
+    if (this.selectedNodeId) {
+      this.filterNodes(this.selectedNodeId);
     }
 
-    // @ts-ignore
     this.simulation = d3.forceSimulation<VisualizationNode>(combinedNodes)
-    .force("link", d3.forceLink<VisualizationNode, any>(links).id(d => d.id).distance(100).strength(0.1))
-    .force("charge", d3.forceManyBody<VisualizationNode>().strength(-50).distanceMax(150).distanceMin(20))
-    .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("collide", d3.forceCollide<VisualizationNode>().radius(d => radiusScale(d.revenue) + 15))
-    .on("tick", () => {
-      link
-        .attr("x1", (d: any) => (d.source as VisualizationNode).x ?? 0)
-        .attr("y1", (d: any) => (d.source as VisualizationNode).y ?? 0)
-        .attr("x2", (d: any) => (d.target as VisualizationNode).x ?? 0)
-        .attr("y2", (d: any) => (d.target as VisualizationNode).y ?? 0);
+      .force("link", d3.forceLink<VisualizationNode, any>(links).id(d => d.id).distance(100).strength(0.1))
+      .force("charge", d3.forceManyBody<VisualizationNode>().strength(-50).distanceMax(150).distanceMin(20))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("collide", d3.forceCollide<VisualizationNode>().radius(d => radiusScale(d.revenue) + 15))
+      .on("tick", () => {
+        link
+          .attr("x1", (d: any) => (d.source as VisualizationNode).x ?? 0)
+          .attr("y1", (d: any) => (d.source as VisualizationNode).y ?? 0)
+          .attr("x2", (d: any) => (d.target as VisualizationNode).x ?? 0)
+          .attr("y2", (d: any) => (d.target as VisualizationNode).y ?? 0);
 
-      node.attr("transform", (d: VisualizationNode) => `translate(${d.x ?? 0}, ${d.y ?? 0})`);
-    });
-
-
-    const updateLinkVisibility = () => {
-      link.style("display", d => {
-        const sourceNode = combinedNodes.find(node => node.id === String((d.source as unknown as VisualizationNode).id));
-        const targetNode = combinedNodes.find(node => node.id === String((d.target as unknown as VisualizationNode).id));
-
-        if (sourceNode && targetNode) {
-          return sourceNode.visible && targetNode.visible ? null : "none";
-        }
-
-        return "none";
+        node.attr("transform", (d: VisualizationNode) => `translate(${d.x ?? 0}, ${d.y ?? 0})`);
       });
-    };
 
-    updateLinkVisibility();
+    this.updateLinkVisibility();
 
     const drag = d3.drag<SVGCircleElement, any>()
       .on("start", (event, d) => {
@@ -490,6 +555,35 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
       .text("Project");
   }
 
+  toggleCustomersVisibility(sectorId: string): void {
+    const relatedCustomers = this.customerSectorRelations.filter(r => String(r.sectorId) === sectorId).map(r => String(r.customerId));
+    this.nodes.forEach(node => {
+      if (node.type === 'customer' && relatedCustomers.includes(String(node.id))) {
+        node.visible = !node.visible;
+      }
+    });
+    // Hide all projects related to the customers
+    const relatedProjects = this.projectCustomerRelations.filter(r => relatedCustomers.includes(String(r.customerId))).map(r => String(r.projectId));
+    this.nodes.forEach(node => {
+      if (node.type === 'project' && relatedProjects.includes(String(node.id))) {
+        node.visible = false;
+      }
+    });
+    this.updateNodeStyles();
+    this.updateLinkVisibility();
+  }
+
+  toggleProjectsVisibility(customerId: string): void {
+    const relatedProjects = this.projectCustomerRelations.filter(r => String(r.customerId) === customerId).map(r => String(r.projectId));
+    this.nodes.forEach(node => {
+      if (node.type === 'project' && relatedProjects.includes(String(node.id))) {
+        node.visible = !node.visible;
+      }
+    });
+    this.updateNodeStyles();
+    this.updateLinkVisibility();
+  }
+
   toggleSidebar() {
     this.sidebarExpanded = !this.sidebarExpanded;
   }
@@ -526,7 +620,6 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
   private dragStarted(event: d3.D3DragEvent<any, any, any>, d: any) {
     if (!event.active)
-
       this.simulation.alphaTarget(0.1).restart();
 
     event.sourceEvent.stopPropagation();
@@ -541,11 +634,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   private dragEnded(event: d3.D3DragEvent<any, any, any>, d: any) {
-    if (!event.active) {
-
+    if (!event.active)
       this.simulation.alphaTarget(0);
-    }
-
     d.fx = null;
     d.fy = null;
   }
@@ -555,15 +645,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   }
 
   private zoomBy(factor: number): void {
-
     const svgElement = d3.select(this.chartContainer.nativeElement).select('svg');
-
     const transform = d3.zoomTransform(svgElement.node() as any);
-
     const newTransform = transform.scale(factor);
-
     svgElement.transition().duration(750)
       .call(this.zoomBehavior.transform, newTransform);
   }
 }
-
