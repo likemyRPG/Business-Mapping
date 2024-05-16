@@ -40,6 +40,10 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
   nodes: any[] = [];
   links: any[] = [];
 
+  const width;
+  const height;
+  const radiusScale;
+
   selectedCustomer: Customer | null = null;
   selectedNode: Customer | Sector | Project | AccountManager | null = null;
   selectedNodeType: string = '';
@@ -245,8 +249,8 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     }
 
     const element = this.chartContainer.nativeElement;
-    const width = element.offsetWidth;
-    const height = window.innerHeight;
+    this.width = element.offsetWidth;
+    this.height = window.innerHeight;
 
     // Define color scales
     const customerColor = d3.scaleOrdinal<string>().domain(['customer']).range(["#3182bd"]);
@@ -266,16 +270,16 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     });
 
     this.svg = d3.select(element).append('svg')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('viewBox', `0 0 ${width} ${height}`)
+      .attr('width', this.width)
+      .attr('height', this.height)
+      .attr('viewBox', `0 0 ${this.width} ${this.height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .call(this.zoomBehavior)
       .append('g');
 
     this.svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", this.width)
+      .attr("height", this.height)
       .style("fill", "none")
       .style("pointer-events", "all");
 
@@ -324,7 +328,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
         }, 0))
     ];
 
-    const radiusScale = d3.scaleSqrt()
+    this.radiusScale = d3.scaleSqrt()
       .domain([0, d3.max(combinedRevenues)!])
       .range([10, 50]);
 
@@ -449,7 +453,7 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
 
     node.append("circle")
       .attr("r", (d: VisualizationNode) => {
-        return radiusScale(d.revenue);
+        return this.radiusScale(d.revenue);
       })
       .attr("fill", (d: VisualizationNode): string => {
         switch (d.type) {
@@ -479,21 +483,22 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     }
 
     this.simulation = d3.forceSimulation<VisualizationNode>(combinedNodes)
-      .force("link", d3.forceLink<VisualizationNode, any>(links).id(d => d.id).distance(100).strength(0.1))
-      .force("charge", d3.forceManyBody<VisualizationNode>().strength(-50).distanceMax(150).distanceMin(20))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collide", d3.forceCollide<VisualizationNode>().radius(d => radiusScale(d.revenue) + 15))
-      .on("tick", () => {
-        link
-          .attr("x1", (d: any) => (d.source as VisualizationNode).x ?? 0)
-          .attr("y1", (d: any) => (d.source as VisualizationNode).y ?? 0)
-          .attr("x2", (d: any) => (d.target as VisualizationNode).x ?? 0)
-          .attr("y2", (d: any) => (d.target as VisualizationNode).y ?? 0);
+    .force("link", d3.forceLink<VisualizationNode, any>(links).id(d => d.id).distance(100).strength(0.1))
+    .force("charge", d3.forceManyBody<VisualizationNode>().strength(-50).distanceMax(150).distanceMin(20))
+    .force("center", d3.forceCenter(this.width / 2, this.height / 2))
+    .force("collide", d3.forceCollide<VisualizationNode>().radius(d => this.radiusScale(d.revenue) + 15).iterations(2))
+    .on("tick", () => {
+      link
+        .attr("x1", (d: any) => (d.source as VisualizationNode).x ?? 0)
+        .attr("y1", (d: any) => (d.source as VisualizationNode).y ?? 0)
+        .attr("x2", (d: any) => (d.target as VisualizationNode).x ?? 0)
+        .attr("y2", (d: any) => (d.target as VisualizationNode).y ?? 0);
 
-        node.attr("transform", (d: VisualizationNode) => `translate(${d.x ?? 0}, ${d.y ?? 0})`);
-      });
+      node.attr("transform", (d: VisualizationNode) => `translate(${d.x ?? 0}, ${d.y ?? 0})`);
+    });
 
     this.updateLinkVisibility();
+    this.organizeGroups();
 
     const drag = d3.drag<SVGCircleElement, any>()
       .on("start", (event, d) => {
@@ -651,4 +656,75 @@ export class CustomerVisualizationComponent implements OnChanges, AfterViewInit 
     svgElement.transition().duration(750)
       .call(this.zoomBehavior.transform, newTransform);
   }
+
+  openAllNodes(): void {
+    this.nodes.forEach(node => {
+      node.visible = true;
+    });
+    this.updateNodeStyles();
+    this.updateLinkVisibility();
+  }
+
+  organizeGroups(): void {
+    const nodesById = new Map(this.nodes.map(node => [node.id, node]));
+    const visited = new Set();
+    const clusters: VisualizationNode[][] = [];
+  
+    const bfs = (start: VisualizationNode) => {
+      const queue = [start];
+      const cluster = [];
+  
+      while (queue.length > 0) {
+        const node = queue.shift();
+        if (node && !visited.has(node.id)) {
+          visited.add(node.id);
+          cluster.push(node);
+  
+          const neighbors = this.links
+            .filter(link => link.source.id === node.id || link.target.id === node.id)
+            .map(link => link.source.id === node.id ? nodesById.get(link.target.id) : nodesById.get(link.source.id));
+  
+          neighbors.forEach(neighbor => {
+            if (neighbor && !visited.has(neighbor.id)) {
+              queue.push(neighbor);
+            }
+          });
+        }
+      }
+  
+      return cluster;
+    };
+  
+    this.nodes.forEach(node => {
+      if (!visited.has(node.id)) {
+        const cluster = bfs(node);
+        clusters.push(cluster);
+      }
+    });
+  
+    const clusterDistance = 400; // Adjust this value to increase/decrease the distance between clusters
+    const centerX = this.width / 2;
+    const centerY = this.height / 2;
+    const angleStep = (2 * Math.PI) / clusters.length;
+  
+    clusters.forEach((cluster, index) => {
+      const angle = index * angleStep;
+      const clusterCenterX = centerX + clusterDistance * Math.cos(angle);
+      const clusterCenterY = centerY + clusterDistance * Math.sin(angle);
+  
+      cluster.forEach((node, nodeIndex) => {
+        const offsetX = (Math.random() - 0.5) * clusterDistance / 4;
+        const offsetY = (Math.random() - 0.5) * clusterDistance / 4;
+        node.x = clusterCenterX + offsetX;
+        node.y = clusterCenterY + offsetY;
+        node.fx = null;
+        node.fy = null;
+      });
+    });
+  
+    this.simulation.nodes(this.nodes);
+    this.simulation.alpha(1).restart();
+  }
+  
+   
 }
