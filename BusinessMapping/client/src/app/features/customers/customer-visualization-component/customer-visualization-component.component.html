@@ -5,6 +5,7 @@
       <option *ngFor="let node of nodes" [value]="node.id">{{ node.name }}</option>
     </select>
   </div>
+  <button (click)="exportCanvas()" class="export-button">Export</button>
   <div class="flex-1 bg-white">
     <div #chart class="chart-container flex-grow bg-white"></div>
   </div>

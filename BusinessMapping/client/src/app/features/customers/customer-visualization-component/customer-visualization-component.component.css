@@ -79,3 +79,21 @@ button:hover {
   opacity: 0.9;
   transition: opacity 0.2s;
 }
+
+.export-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  font-size: 12px;
+  background-color: #3182bd;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  z-index: 1000; /* Ensure the button is on top of other elements */
+}
+
+.export-button:hover {
+  background-color: #255a8f;
+}
